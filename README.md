@@ -4,59 +4,86 @@
 # 效果
 ![效果](demo.jpg)
 
-# 使用
+通过 npm 引入
 
-  ```
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-  </head>
-  <body>
-    <!-- 导入组件 -->
-    <script src="./excel-download.js"></script>
-    <!-- 使用 -->
-    <script>
-      // 服务器获取到的数据源
-      const dataSource = [
+```
+npm i dzm-exdownload
+```
+
+然后在 main.js 中进行导入
+
+```
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+
+import DZMEXDownload from 'dzm-exdownload'
+Vue.prototype.$exdownload = DZMEXDownload
+
+Vue.config.productionTip = false
+
+new Vue({
+  router,
+  store,
+  render: h => h(App)
+}).$mount('#app')
+```
+
+vue 文件中使用
+
+```
+<script>
+
+export default {
+  mounted () {
+    // 服务器获取到的数据源
+    const dataSource = [
+    {
+      id: 1,
+      name: 'dzm',
+      // (可选)如果列表数据有子列表数据，也是支持的
+      children: [
         {
-          id: 1,
-          name: 'dzm',
-          // (可选)如果列表数据有子列表数据，也是支持的
+          id: 4,
+          name: 'dzm4',
           children: [
             {
-              id: 4,
-              name: 'dzm1'
+              id: 6,
+              name: 'dzm6'
             },
             {
-              id: 5,
-              name: 'dzm2'
+              id: 7,
+              name: 'dzm7'
             }
           ]
         },
         {
-          id: 2,
-          name: 'xyq'
-        },
-        {
-          id: 3,
-          name: 'djy'
+          id: 5,
+          name: 'dzm5'
         }
       ]
-      // 将要保存的 sheets 数据源
-      const sheets = [
+    },
+    {
+      id: 2,
+      name: 'xyq'
+    },
+    {
+      id: 3,
+      name: 'djy'
+    }
+    ]
+    // 将要保存的 sheets 数据源
+    const sheets = [
         {
           // 单个 sheet 名字
           name: '用户数据',
           // 单个 sheet 数据源
           data: dataSource
         }
-      ]
-      // Excel 每一列的列头名字跟字段key，通过列名展示，列key获取数据源中对应的值
-      const columns = [
+    ]
+    // Excel 每一列的列头名字跟字段key，通过列名展示，列key获取数据源中对应的值作为单元格的值
+    const columns = [
         {
           name: '用户ID',
           field: 'id'
@@ -65,10 +92,16 @@
           name: '用户名称',
           field: 'name'
         }
-      ]
-      // 开始下载
-      EXDownloadManager(sheets, columns)
-    </script>
-  </body>
-  </html>
-  ```
+    ]
+    // 开始下载
+    // this.$exdownload.EXDownloadManager(sheets, columns)
+    this.$exdownload.EXDownloadManagerPro(sheets, columns, function (data, field) {
+        // 判断处理单个字段
+        console.log(data, field);
+        // 返回处理好的值
+        return data
+    })
+  }
+}
+</script>
+```
