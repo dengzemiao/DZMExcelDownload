@@ -1,4 +1,10 @@
 /**
+ * @description: 下载通用对象，属性值参考 EXDownloadManagerPro
+ */
+function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
+  EXDownloadManagerPro(sheets, columns, undefined, fileName, fileSuffix)
+}
+/**
  *
  * 将指定数据保存为 Excel
  * 这里只是一个通用封装
@@ -7,12 +13,16 @@
  *
  * @param {*} sheets 需要保存的数据源 (必填)
  * @param {*} columns 列数据名称与Key（必填）
+ * @param {*} beforeChange 取出单个数据准备加入到行数据中，可拦截修改存储值
+ * function beforeChange (data, field) {
+ *   // 如果有单独字段判断处理可以在此处进行
+ *   // 转换为元单位
+ *   return field === 'money' ? data / 100 : data
+ * }
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
-
-// 下载通用对象
-function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
+function EXDownloadManagerPro (sheets, columns, beforeChange, fileName, fileSuffix) {
   // 检查数据
   if (!sheets || !sheets.length || !columns || !columns.length) { return }
 
@@ -46,11 +56,8 @@ function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
       columns.forEach((column) => {
         // 获取列数据
         var columnData = item[column.field]
-        // 如果有单独字段判断处理可以在此处进行
-        // if (column.field === 'money') {
-        //   // 转换为元单位
-        //   columnData = columnData / 100
-        // }
+        // 准备将数据加入 Row 中
+        if (beforeChange) { columnData = beforeChange(columnData, column.field) }
         // 加入到行数据
         EXRow.push({
           data: columnData
@@ -60,20 +67,7 @@ function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
       EXRows.push(EXRow)
 
       // 行数据中如果还有子列表数据
-      const children = item.children || []
-      // 便利 children 数据
-      children.forEach((item) => {
-        // EXRow 数据
-        var EXRow = []
-        // 通过便利列数据获得字段数据
-        columns.forEach((column) => {
-          EXRow.push({
-            data: item[column.field]
-          })
-        })
-        // 放到 EXRows 里面
-        EXRows.push(EXRow)
-      })
+      EXDownloadChildren(EXRows, columns, item.children, beforeChange)
     })
 
     // EXSheet 数据
@@ -86,6 +80,41 @@ function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
   })
   // 开始下载
   EXDownload(EXSheets, fileName, fileSuffix)
+}
+
+/**
+ * @description: 将 children 列表解析成 rows
+ * @param {*} rows 行列表数组
+ * @param {*} columns 列数据名称与Key（必填）
+ * @param {*} children 数据源子列表
+ * @param {*} beforeChange 取出单个数据准备加入到行数据中
+ */
+function EXDownloadChildren (rows, columns, children, beforeChange) {
+  // 获得子列表
+  const list = children || []
+  // 子列表是否有数据
+  if (list.length) {
+    // 便利 children 数据
+    list.forEach((item) => {
+      // EXRow 数据
+      var EXRow = []
+      // 通过便利列数据获得字段数据
+      columns.forEach((column) => {
+        // 获取列数据
+        var columnData = item[column.field]
+        // 准备将数据加入 Row 中
+        if (beforeChange) { columnData = beforeChange(columnData, column.field) }
+        // 加入到行数据
+        EXRow.push({
+          data: columnData
+        })
+      })
+      // 放到 EXRows 里面
+      rows.push(EXRow)
+      // 解析子列表
+      EXDownloadChildren(rows, columns, item.children)
+    })
+  }
 }
 
 // ---------------------------------------------------- 下面为核心代码 ---------------------------------------
@@ -238,4 +267,11 @@ function EXDownload (sheets, fileName, fileSuffix) {
   alink.click()
   // 移除 a 标签
   // document.body.removeChild(alink)
+}
+
+// 导出
+module.exports = {
+  EXDownloadManager,
+  EXDownloadManagerPro,
+  EXDownload
 }

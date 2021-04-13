@@ -8,7 +8,7 @@
 </head>
 <body>
   <!-- 导入组件 -->
-  <script src="./excel-download.js"></script>
+  <script src="./dzm-exdownload.js"></script>
   <!-- 使用 -->
   <script>
     // 服务器获取到的数据源
@@ -20,11 +20,21 @@
         children: [
           {
             id: 4,
-            name: 'dzm1'
+            name: 'dzm4',
+            children: [
+              {
+                id: 6,
+                name: 'dzm6'
+              },
+              {
+                id: 7,
+                name: 'dzm7'
+              }
+            ]
           },
           {
             id: 5,
-            name: 'dzm2'
+            name: 'dzm5'
           }
         ]
       },
@@ -58,7 +68,12 @@
       }
     ]
     // 开始下载
-    EXDownloadManager(sheets, columns)
+    EXDownloadManagerPro(sheets, columns, function (data, field) {
+      // 判断处理单个字段
+      console.log(data, field);
+      // 返回处理好的值
+      return data
+    })
   </script>
 </body>
 </html>
