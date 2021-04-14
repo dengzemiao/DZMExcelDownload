@@ -1,10 +1,4 @@
 /**
- * @description: 下载通用对象，属性值参考 EXDownloadManagerPro
- */
-function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
-  EXDownloadManagerPro(sheets, columns, undefined, fileName, fileSuffix)
-}
-/**
  *
  * 将指定数据保存为 Excel
  * 这里只是一个通用封装
@@ -13,7 +7,7 @@ function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
  *
  * @param {*} sheets 需要保存的数据源 (必填)
  * @param {*} columns 列数据名称与Key（必填）
- * @param {*} beforeChange 取出单个数据准备加入到行数据中，可拦截修改存储值
+ * @param {*} beforeChange 取出单个数据准备加入到行数据中，可拦截修改存储值（选填）
  * function beforeChange (data, field) {
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
@@ -22,7 +16,7 @@ function EXDownloadManager (sheets, columns, fileName, fileSuffix) {
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
-function EXDownloadManagerPro (sheets, columns, beforeChange, fileName, fileSuffix) {
+function EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix) {
   // 检查数据
   if (!sheets || !sheets.length || !columns || !columns.length) { return }
 
@@ -272,6 +266,5 @@ function EXDownload (sheets, fileName, fileSuffix) {
 // 导出
 module.exports = {
   EXDownloadManager,
-  EXDownloadManagerPro,
   EXDownload
 }

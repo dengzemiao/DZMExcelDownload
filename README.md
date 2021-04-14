@@ -94,8 +94,9 @@ export default {
         }
     ]
     // 开始下载
+    // EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
     // this.$exdownload.EXDownloadManager(sheets, columns)
-    this.$exdownload.EXDownloadManagerPro(sheets, columns, function (data, field) {
+    this.$exdownload.EXDownloadManager(sheets, columns, function (data, field) {
         // 判断处理单个字段
         console.log(data, field);
         // 返回处理好的值
