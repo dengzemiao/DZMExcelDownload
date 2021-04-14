@@ -7,7 +7,7 @@
 通过 npm 引入
 
 ```
-npm i dzm-exdownload
+npm i dzm-download-excel
 ```
 
 然后在 main.js 中进行导入
@@ -18,7 +18,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
-import DZMEXDownload from 'dzm-exdownload'
+// import { EXDownloadManager, EXDownload } from 'dzm-download-excel'
+import DZMEXDownload from 'dzm-download-excel'
 Vue.prototype.$exdownload = DZMEXDownload
 
 Vue.config.productionTip = false
