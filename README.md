@@ -22,8 +22,8 @@ import store from './store'
   EXDownloadManager,
   EXDownload
 } from 'dzm-dl-excel'
-import DZMEXDownload from 'dzm-dl-excel'
-Vue.prototype.$exdownload = DZMEXDownload
+import { EXDownloadManager } from 'dzm-dl-excel'
+Vue.prototype.$exdownload = EXDownloadManager
 
 Vue.config.productionTip = false
 
@@ -64,7 +64,11 @@ export default {
         },
         {
           id: 5,
-          name: 'dzm5'
+          name: 'dzm5',
+          // 多层级取值展示到 excel
+          info: {
+            age: 10
+          }
         }
       ]
     },
@@ -95,12 +99,19 @@ export default {
         {
           name: '用户名称',
           field: 'name'
+        },
+        {
+          name: '用户年龄',
+          // 多层级取值展示到 excel
+          // 例如：{ id: 1, info: { age: 10 } }  = 'info.age'
+          // 例如：{ id: 1, info: { detail: { age: 10 } } }  = 'info.detail.age'
+          field: 'info.age'
         }
     ]
     // 开始下载
     // EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
-    // this.$exdownload.EXDownloadManager(sheets, columns)
-    this.$exdownload.EXDownloadManager(sheets, columns, function (data, field) {
+    // this.$exdownload(sheets, columns)
+    this.$exdownload(sheets, columns, function (data, field) {
         // 判断处理单个字段
         console.log(data, field);
         // 返回处理好的值

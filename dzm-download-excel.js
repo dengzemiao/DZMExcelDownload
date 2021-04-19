@@ -16,7 +16,7 @@
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
-function EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix) {
+ function EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix) {
   // 检查数据
   if (!sheets || !sheets.length || !columns || !columns.length) { return }
 
@@ -49,7 +49,7 @@ function EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
       // 通过便利列数据获得字段数据
       columns.forEach((column) => {
         // 获取列数据
-        var columnData = item[column.field]
+        var columnData = GetColumnData(column.field, item)
         // 准备将数据加入 Row 中
         if (beforeChange) { columnData = beforeChange(columnData, column.field) }
         // 加入到行数据
@@ -95,7 +95,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // 通过便利列数据获得字段数据
       columns.forEach((column) => {
         // 获取列数据
-        var columnData = item[column.field]
+        var columnData = GetColumnData(column.field, item)
         // 准备将数据加入 Row 中
         if (beforeChange) { columnData = beforeChange(columnData, column.field) }
         // 加入到行数据
@@ -108,6 +108,38 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // 解析子列表
       EXDownloadChildren(rows, columns, item.children)
     })
+  }
+}
+
+/**
+ * @description: 分割列字段并取出对应的列数据
+ * @param {*} columnField 列字段
+ * @param {*} rowData 行数据
+ * @return {*}
+ */
+function GetColumnData(columnField, rowData) {
+  // 分割字段 例如 info.avatar
+  const fields = columnField.split('.')
+  // 有多层级字段
+  if (fields.length > 1) {
+    // 单元格数据
+    var columnData = rowData
+    // 当前索引
+    var index = 0
+    // 循环得到单元格数据
+    while (index <= (fields.length -1)) {
+      // 取得当前层字段数据
+      columnData = columnData[`${fields[index]}`]
+      // 如果取得空，则停止
+      if (columnData === undefined) { break }
+      // 取到值则继续
+      index += 1
+    }
+    // 返回单元格数据
+    return columnData
+  } else {
+    // 如果就一个字段，直接获取即可
+    return rowData[columnField]
   }
 }
 
