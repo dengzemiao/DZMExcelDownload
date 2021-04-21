@@ -110,6 +110,11 @@ export default {
     ]
     // 开始下载
     // EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
+    // function beforeChange (data, field) {
+    //    // 如果有单独字段判断处理可以在此处进行，记得 return 显示数据值。
+    //    // 转换为元单位
+    //    return field === 'money' ? data / 100 : data
+    // }
     // this.$exdownload(sheets, columns)
     this.$exdownload(sheets, columns, function (data, field) {
         // 判断处理单个字段
