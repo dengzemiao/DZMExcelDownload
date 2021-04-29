@@ -34,13 +34,17 @@
           },
           {
             id: 5,
-            name: 'dzm5'
+            name: 'dzm5',
+            // 多层级取值展示到 excel
+            info: {
+              age: 10
+            }
           }
         ]
       },
       {
         id: 2,
-        name: 'xyq'
+        name: '2020-09-24'
       },
       {
         id: 3,
@@ -65,14 +69,28 @@
       {
         name: '用户名称',
         field: 'name'
+      },
+      {
+        name: '用户年龄',
+        // 多层级取值展示到 excel
+        // 例如：{ id: 1, info: { age: 10 } }  = 'info.age'
+        // 例如：{ id: 1, info: { detail: { age: 10 } } }  = 'info.detail.age'
+        field: 'info.age'
       }
     ]
     // 开始下载
-    EXDownloadManagerPro(sheets, columns, function (data, field) {
+    EXDownloadManager(sheets, columns, function (item, field) {
       // 判断处理单个字段
-      console.log(data, field);
+      // 单元格内容：item.data
+      // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
+      console.log(item, item.data, item.dataType, field);
+
+      // 如果需要单独处理数据
+      // item.data = '调整之后的新数据'
+      // item.dataType = 'Boolean'
+
       // 返回处理好的值
-      return data
+      return item
     })
   </script>
 </body>

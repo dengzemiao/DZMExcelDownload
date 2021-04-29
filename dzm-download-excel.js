@@ -7,11 +7,11 @@
  *
  * @param {*} sheets 需要保存的数据源 (必填)
  * @param {*} columns 列数据名称与Key（必填）
- * @param {*} beforeChange 取出单个数据准备加入到行数据中，可拦截修改存储值（选填）
- * function beforeChange (data, field) {
+ * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
+ * function beforeChange (item, field) {
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
- *   return field === 'money' ? data / 100 : data
+ *   return field === 'money' ? (item.data = item.data / 100) : item
  * }
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
@@ -50,12 +50,15 @@
       columns.forEach((column) => {
         // 获取列数据
         var columnData = GetColumnData(column.field, item)
+        // 单元格数据
+        var itemData = {
+          data: columnData,
+          dataType: undefined
+        }
         // 准备将数据加入 Row 中
-        if (beforeChange) { columnData = beforeChange(columnData, column.field) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field) }
         // 加入到行数据
-        EXRow.push({
-          data: columnData
-        })
+        EXRow.push(itemData)
       })
       // 放到 EXRows 里面
       EXRows.push(EXRow)
@@ -96,12 +99,15 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       columns.forEach((column) => {
         // 获取列数据
         var columnData = GetColumnData(column.field, item)
+        // 单元格数据
+        var itemData = {
+          data: columnData,
+          dataType: undefined
+        }
         // 准备将数据加入 Row 中
-        if (beforeChange) { columnData = beforeChange(columnData, column.field) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field) }
         // 加入到行数据
-        EXRow.push({
-          data: columnData
-        })
+        EXRow.push(itemData)
       })
       // 放到 EXRows 里面
       rows.push(EXRow)
