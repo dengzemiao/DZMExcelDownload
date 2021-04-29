@@ -110,17 +110,25 @@ export default {
     ]
     // 开始下载
     // EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
-    // function beforeChange (data, field) {
-    //    // 如果有单独字段判断处理可以在此处进行，记得 return 显示数据值。
+    // 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型
+    // function beforeChange (item, field) {
     //    // 转换为元单位
-    //    return field === 'money' ? data / 100 : data
+    //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
     // this.$exdownload(sheets, columns)
-    this.$exdownload(sheets, columns, function (data, field) {
+    this.$exdownload(sheets, columns, function (item, field) {
         // 判断处理单个字段
-        console.log(data, field);
+        // 单元格内容：item.data
+        // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
+        console.log(item, item.data, item.dataType, field);
+
+        // 如果需要单独处理数据
+        // item.data = '调整之后的新数据'
+        // dataType：Number、String、Boolean、DateTime、Error ...
+        // item.dataType = 'Boolean'
+
         // 返回处理好的值
-        return data
+        return item
     })
   }
 }
