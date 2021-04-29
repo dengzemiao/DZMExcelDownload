@@ -165,6 +165,7 @@ function GetColumnData(columnField, rowData) {
             // 展示数据
             data: 123,
             // 数据类型，首字母大写 (可选值，可不传，可为空，默认会使用 data 的数据类型)
+            // dataType：Number、String、Boolean、DateTime、Error ...
             dataType: 'Number'  // Number 类型长度最大只能 11 位数字，超过会自动转换为 String 存储
           }
         ]
