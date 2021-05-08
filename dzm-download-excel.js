@@ -168,6 +168,7 @@ function GetColumnData(columnField, rowData) {
             // 数据类型，首字母大写 (可选值，默认为空，默认会使用 data 的原始类型)
             // dataType：Number、String、Boolean、Date ...
             // Number：类型长度最大只能 11 位数字，超过会自动转换为 String 存储
+            // Date：日期格式支持 xxxx/xx/xx、xxxx-xx-xx、xxxx~xx~xx、xxxx年xx月xx日
             dataType: 'Number', 
             // （暂未开放，先配置 dataType='Date' 使用）样式，默认只支持配置将 日期字符串转 换成 Excel日期格式
             style: {}

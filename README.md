@@ -36,6 +36,7 @@ new Vue({
 
 vue 文件中使用
 
+
 ```
 <script>
 
@@ -74,7 +75,9 @@ export default {
     },
     {
       id: 2,
-      name: 'xyq'
+      name: 'xyq',
+      // 字符串日期格式，如果需要导出为 Excel 日期格式需要拦截修改类型
+      birthday: '2015/12/20'
     },
     {
       id: 3,
@@ -106,6 +109,12 @@ export default {
           // 例如：{ id: 1, info: { age: 10 } }  = 'info.age'
           // 例如：{ id: 1, info: { detail: { age: 10 } } }  = 'info.detail.age'
           field: 'info.age'
+        },
+        {
+          name: '生日',
+          field: 'birthday',
+          // 可以这里指定类型，也可以通过 beforeChange 拦截设定类型
+          dataType: 'Date'
         }
     ]
     // 开始下载
@@ -124,8 +133,13 @@ export default {
 
         // 如果需要单独处理数据
         // item.data = '调整之后的新数据'
-        // dataType：Number、String、Boolean、DateTime、Error ...
+        // dataType：Number、String、Boolean、Date
         // item.dataType = 'Boolean'
+
+        // 将日期字符串改为 Excel 日期格式
+        // if (field === 'birthday') {
+        //   item.dataType = 'Date'
+        // }
 
         // 返回处理好的值
         return item
