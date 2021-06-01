@@ -8,7 +8,8 @@
  * @param {*} sheets 需要保存的数据源 (必填)
  * @param {*} columns 列数据名称与Key（必填）
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
- * function beforeChange (item, field) {
+ * function beforeChange (item, field, json) {
+ *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
  *   return field === 'money' ? (item.data = item.data / 100) : item
@@ -50,14 +51,14 @@
       // 通过便利列数据获得字段数据
       columns.forEach((column) => {
         // 获取列数据
-        var columnData = GetColumnData(column.field, item)
+        var columnData = GetColumnData(item, column.field)
         // 单元格数据
         var itemData = {
           data: columnData,
           dataType: column.dataType
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
         // 加入到行数据
         EXRow.push(itemData)
       })
@@ -99,14 +100,14 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // 通过便利列数据获得字段数据
       columns.forEach((column) => {
         // 获取列数据
-        var columnData = GetColumnData(column.field, item)
+        var columnData = GetColumnData(item, column.field)
         // 单元格数据
         var itemData = {
           data: columnData,
           dataType: column.dataType
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
         // 加入到行数据
         EXRow.push(itemData)
       })
@@ -120,17 +121,19 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
 
 /**
  * @description: 分割列字段并取出对应的列数据
+ * @param {*} itemJson 行数据
  * @param {*} columnField 列字段
- * @param {*} rowData 行数据
  * @return {*}
  */
-function GetColumnData(columnField, rowData) {
+function GetColumnData(itemJson, columnField) {
+  // 单元格数据
+  var columnData = undefined
   // 分割字段 例如 info.avatar
   const fields = columnField.split('.')
   // 有多层级字段
   if (fields.length > 1) {
-    // 单元格数据
-    var columnData = rowData
+    // 方便循环获取
+    columnData = itemJson
     // 当前索引
     var index = 0
     // 循环得到单元格数据
@@ -142,12 +145,12 @@ function GetColumnData(columnField, rowData) {
       // 取到值则继续
       index += 1
     }
-    // 返回单元格数据
-    return columnData
   } else {
     // 如果就一个字段，直接获取即可
-    return rowData[columnField]
-  }
+    columnData = itemJson[columnField]
+  } 
+  // 返回单元格数据
+  return columnData
 }
 
 // ---------------------------------------------------- 下面为核心代码 ---------------------------------------
