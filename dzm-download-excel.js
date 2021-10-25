@@ -262,7 +262,7 @@ function EXDownload (sheets, fileName, fileSuffix) {
       // 便利 Cell
       row.forEach((cell, cellIndex) => {
         // 组合 StyleID
-        var styleID = `s-${sheetIndex}-${rowIndex}-${cellIndex}`
+        var styleID = `s${sheetIndex}-${rowIndex}-${cellIndex}`
 
         // 获取数据类型
         var dataType = cell.dataType || typeof (cell.data)
