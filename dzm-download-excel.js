@@ -6,7 +6,7 @@
  * 推荐拷贝该方法进行扩展即可，如果需要处理单个字段，下面有写注释，判断处理即可
  *
  * @param {*} sheets 需要保存的数据源 (必填)
- * const sheets = {
+ * var sheets = {
  *   // 单个 sheet 名字
  *   name: 'sheet1',
  *   // 单个 sheet 数据源
@@ -30,15 +30,15 @@
   if (!sheets || !sheets.length) { return }
 
   // 设置空数据
-  const EXSheets = []
+  var EXSheets = []
 
   // 遍历数据
   sheets.forEach((item) => {
     // EXRows 数据
-    const EXRows = []
+    var EXRows = []
 
     // 列名称与读取key
-    const columns = item.columns || []
+    var columns = item.columns || []
 
     // 行标题数据
     // EXRow 数据
@@ -53,7 +53,7 @@
     EXRows.push(EXRow)
 
     // 行数据
-    const dataSource = item.data || []
+    var dataSource = item.data || []
     // 便利数据源
     dataSource.forEach((item) => {
       // EXRow 数据
@@ -65,7 +65,8 @@
         // 单元格数据
         var itemData = {
           data: columnData,
-          dataType: column.dataType
+          dataType: column.dataType,
+          style: column.style
         }
         // 准备将数据加入 Row 中
         if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
@@ -100,7 +101,7 @@
  */
 function EXDownloadChildren (rows, columns, children, beforeChange) {
   // 获得子列表
-  const list = children || []
+  var list = children || []
   // 子列表是否有数据
   if (list.length) {
     // 便利 children 数据
@@ -114,7 +115,8 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
         // 单元格数据
         var itemData = {
           data: columnData,
-          dataType: column.dataType
+          dataType: column.dataType,
+          style: column.style
         }
         // 准备将数据加入 Row 中
         if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
@@ -139,7 +141,7 @@ function GetColumnData(itemJson, columnField) {
   // 单元格数据
   var columnData = undefined
   // 分割字段 例如 info.avatar
-  const fields = columnField.split('.')
+  var fields = columnField.split('.')
   // 有多层级字段
   if (fields.length > 1) {
     // 方便循环获取
@@ -183,8 +185,17 @@ function GetColumnData(itemJson, columnField) {
             // Number：类型长度最大只能 11 位数字，超过会自动转换为 String 存储
             // Date：日期格式支持 xxxx/xx/xx、xxxx-xx-xx、xxxx~xx~xx、xxxx年xx月xx日
             dataType: 'Number', 
-            // （暂未开放，先配置 dataType='Date' 使用）样式，默认只支持配置将 日期字符串转 换成 Excel日期格式
-            style: {}
+            // (可选)单元格样式
+            style: {
+              // (可选)字体颜色
+              color: '#00ff00',
+              // (可选)字体大小
+              fontSize: 12,
+              // (可选)字体名称
+              fontName: '宋体',
+              // (可选)背景颜色
+              backgroundColor: '#FF0000'
+            }
           }
         ]
       ]
@@ -223,7 +234,7 @@ function GetColumnData(itemJson, columnField) {
  */
 function EXDownload (sheets, fileName, fileSuffix) {
   // 数据
-  const EXSheets = sheets
+  var EXSheets = sheets
 
   // 检查是否有数据
   if (!EXSheets || !EXSheets.length) { return }
@@ -288,29 +299,25 @@ function EXDownload (sheets, fileName, fileSuffix) {
 
         // Date 类型处理
         if (cell.dataType === 'Date') {
-
           // 没有数据，格式强行转换为 String 格式
           dataType = 'String'
-
           // 有数据
           if (cell.data) {
-
             // 格式强行转换为 Number 格式
             dataType = 'Number'
-
-            // 临时设置一个指定值，用于测试
+            // 将日期转换为天数
             cell.data = EXDateNumber(cell.data)
-
-            //  获取 Style
-            var EXStyleString = EXStyleDate(styleID)
-
-            // 添加到 Styles 列表
-            EXStyleStrings.push(EXStyleString)
           }
         }
 
+        // 获取单元格 Style 样式
+        var EXStyleString = EXStyle(cell, styleID)
+
+        // 添加到 Styles 列表
+        if (EXStyleString) { EXStyleStrings.push(EXStyleString) }
+
         // 获取 Cell 单元格
-        var EXCellString = EXCell(cell.data, dataType, styleID)
+        var EXCellString = EXCell(cell, dataType, styleID)
 
         // 拼接 Cell 单元格
         EXSheetString += EXCellString
@@ -358,11 +365,11 @@ function EXDownload (sheets, fileName, fileSuffix) {
   EXString += '</Workbook>'
 
   // 创建 a 标签
-  const alink = document.createElement('a')
+  var alink = document.createElement('a')
   // 设置下载文件名,大部分浏览器兼容,IE10及以下不兼容
   alink.download = `${EXFileName}.${EXFileSuffix}`
   // 将数据包装成 Blob
-  const blob = new Blob([EXString])
+  var blob = new Blob([EXString])
   // 根据 Blob 创建 URL
   alink.href = URL.createObjectURL(blob)
   // 将 a 标签插入到页面
@@ -373,26 +380,66 @@ function EXDownload (sheets, fileName, fileSuffix) {
   // document.body.removeChild(alink)
 }
 
-// 获取 Style - Short Date 日期格式 YYYY/M/D
-function EXStyleDate (styleID) {
+// 获取 Style
+function EXStyle (cell, styleID) {
+  // 是否需要提供样式支持
+  var isStyle = false
+  // 样式对象
+  var style = cell.style || {}
+  // 样式 Keys
+  var styleKeys = Object.keys(style)
   // Style 头部
   var EXStyleString = `<Style ss:ID="${styleID}">`
-  // Style 内容
-  EXStyleString += `<NumberFormat ss:Format="Short Date"/>`
+  // Date 类型样式处理
+  if (cell.dataType === 'Date' && cell.data) {
+    // 有样式
+    isStyle = true
+    // Style 内容（Short Date 日期格式 YYYY/M/D）
+    EXStyleString += `<NumberFormat ss:Format="Short Date"/>`
+  }
+  // 其他样式处理
+  if (styleKeys.length) {
+    // 样式支持情况
+    var isColor = styleKeys.includes('color')
+    var isFontSize = styleKeys.includes('fontSize')
+    var isFontName = styleKeys.includes('fontName')
+    var isBGColor = styleKeys.includes('backgroundColor')
+    // 字体
+    if (isColor || isFontSize || isFontName) {
+      // 有样式
+      isStyle = true
+      // Font 样式内容
+      var EXStyleFontString = `<Font`
+      if (isFontName) { EXStyleFontString += ` ss:FontName="${style.fontName}"` }
+      EXStyleFontString += ` x:CharSet="134"`
+      if (isFontSize) { EXStyleFontString += ` ss:Size="${style.fontSize}"` }
+      if (isColor) { EXStyleFontString += ` ss:Color="${style.color}"` }
+      EXStyleFontString += '/>'
+      // 添加 Font 样式
+      EXStyleString += EXStyleFontString
+    }
+    // 背景颜色
+    if (isBGColor) {
+      // 有样式
+      isStyle = true
+      // Style 内容
+      EXStyleString += `<Interior ss:Color="${style.backgroundColor}" ss:Pattern="Solid"/>`
+    }
+  }
   // Style 尾部
   EXStyleString += `</Style>`
   // 返回
-  return EXStyleString
+  return isStyle ? EXStyleString : ''
 }
 
 // 获取 Cell 单元格
-function EXCell (data, dataType, styleID) {
+function EXCell (cell, dataType, styleID) {
   // Cell 头部
   var EXCellString = `<Cell ss:StyleID="${styleID}">`
   // Data 头部
   EXCellString += `<Data ss:Type="${dataType || ''}">`
   // Data 数据
-  EXCellString += `${data || ''}`
+  EXCellString += `${cell.data || ''}`
   // Data 尾部
   EXCellString += '</Data>'
   // Cell 尾部

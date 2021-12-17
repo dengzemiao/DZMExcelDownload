@@ -62,7 +62,18 @@
       },
       {
         name: '用户名称',
-        field: 'name'
+        field: 'name',
+        // (可选)单元格样式
+        style: {
+          // (可选)字体颜色
+          color: '#00ff00',
+          // (可选)字体大小
+          fontSize: 12,
+          // (可选)字体名称
+          fontName: '宋体',
+          // (可选)背景颜色
+          backgroundColor: '#FF0000'
+        }
       },
       {
         name: '用户年龄',
@@ -104,7 +115,7 @@
       // 单元格内容：item.data
       // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
       // 单元格数据源：json
-      console.log(item, item.data, item.dataType, field, json);
+      // console.log(item, item.data, item.dataType, field, json);
 
       // 如果需要单独处理数据
       // item.data = '调整之后的新数据'
