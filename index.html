@@ -144,8 +144,13 @@
 
       // 拦截修改样式 - 随机背景
       item.style.backgroundColor = GetRandomColor()
+      item.style.color = GetRandomColor()
       // 合并位置处理
       if (row === 0 && col === 0) {
+        // (可选)内容横向排版：Left、Center、Right
+        item.style.alignmentHor = 'Center',
+        // (可选)内容竖向排版：Top、Center、Bottom
+        item.style.alignmentVer = 'Center',
         // 定义合并样式
         item.style.merges = [{
           // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
