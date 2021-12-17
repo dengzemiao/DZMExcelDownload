@@ -146,7 +146,7 @@
       item.style.backgroundColor = GetRandomColor()
       item.style.color = GetRandomColor()
       // 合并位置处理
-      if (row === 0 && col === 0) {
+      if (row === 0) {
         // (可选)内容横向排版：Left、Center、Right
         item.style.alignmentHor = 'Center',
         // (可选)内容竖向排版：Top、Center、Bottom
@@ -156,9 +156,9 @@
           // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
           row: row,
           // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
-          hor: 2,
+          hor: 7
           // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
-          ver: 2
+          // ver: 3
         }]
       }
 
@@ -172,7 +172,14 @@
       // }
 
       // 返回处理好的值
-      return item
+      if (row === 0) {
+        // 0 行 0 列返回显示，0 行其他列不返回，因为 0 行 0 列有合并单元格操作
+        if (col === 0) { return item
+        } else { return null }
+      } else {
+        // 其他行列正常返回
+        return item
+      }
     })
 
     // 随机颜色

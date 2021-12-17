@@ -48,14 +48,17 @@
       // 样式是否需要支持标题栏
       var supportTitle = column.style ? column.style.supportTitle : false
       // 单元格数据
-      var itemData ={
+      var itemData = {
         data: column.name,
         style: supportTitle ? column.style : {}
       }
       // 准备将数据加入 Row 中
       if (beforeChange) { itemData = beforeChange(itemData, column.field, column, EXRows.length, columnIndex) }
-      // 组装
-      EXRow.push(itemData)
+      // 有值 && 不隐藏
+      if (itemData && !itemData.hide) {
+        // 加入到行列表
+        EXRow.push(itemData)
+      }
     })
     // 放到 EXRows 里面
     EXRows.push(EXRow)
@@ -78,8 +81,11 @@
         }
         // 准备将数据加入 Row 中
         if (beforeChange) { itemData = beforeChange(itemData, column.field, item, EXRows.length, columnIndex) }
-        // 加入到行数据
-        EXRow.push(itemData)
+        // 有值 && 不隐藏
+        if (itemData && !itemData.hide) {
+          // 加入到行列表
+          EXRow.push(itemData)
+        }
       })
       // 放到 EXRows 里面
       EXRows.push(EXRow)
@@ -128,8 +134,11 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
         }
         // 准备将数据加入 Row 中
         if (beforeChange) { itemData = beforeChange(itemData, column.field, item, rows.length, columnIndex) }
-        // 加入到行数据
-        EXRow.push(itemData)
+        // 有值 && 不隐藏
+        if (itemData && !itemData.hide) {
+          // 加入到行列表
+          EXRow.push(itemData)
+        }
       })
       // 放到 EXRows 里面
       rows.push(EXRow)
