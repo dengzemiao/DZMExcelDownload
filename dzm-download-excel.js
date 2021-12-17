@@ -124,7 +124,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      EXDownloadChildren(rows, columns, item.children)
+      EXDownloadChildren(rows, columns, item.children, beforeChange)
     })
   }
 }
