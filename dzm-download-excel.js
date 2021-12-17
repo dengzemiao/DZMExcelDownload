@@ -15,7 +15,7 @@
  *   columns: columns
  * }
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
- * function beforeChange (item, field, json) {
+ * function beforeChange (item, field, json, row, col) {
  *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
@@ -44,10 +44,18 @@
     // EXRow 数据
     var EXRow = []
     // 通过便利列数据获得字段数据
-    columns.forEach((column) => {
-      EXRow.push({
-        data: column.name
-      })
+    columns.forEach((column, columnIndex) => {
+      // 样式是否需要支持标题栏
+      var supportTitle = column.style ? column.style.supportTitle : false
+      // 单元格数据
+      var itemData ={
+        data: column.name,
+        style: supportTitle ? column.style : {}
+      }
+      // 准备将数据加入 Row 中
+      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, EXRows.length, columnIndex) }
+      // 组装
+      EXRow.push(itemData)
     })
     // 放到 EXRows 里面
     EXRows.push(EXRow)
@@ -59,17 +67,17 @@
       // EXRow 数据
       var EXRow = []
       // 通过便利列数据获得字段数据
-      columns.forEach((column) => {
+      columns.forEach((column, columnIndex) => {
         // 获取列数据
         var columnData = GetColumnData(item, column.field)
         // 单元格数据
         var itemData = {
           data: columnData,
           dataType: column.dataType,
-          style: column.style
+          style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, EXRows.length, columnIndex) }
         // 加入到行数据
         EXRow.push(itemData)
       })
@@ -109,24 +117,24 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // EXRow 数据
       var EXRow = []
       // 通过便利列数据获得字段数据
-      columns.forEach((column) => {
+      columns.forEach((column, columnIndex) => {
         // 获取列数据
         var columnData = GetColumnData(item, column.field)
         // 单元格数据
         var itemData = {
           data: columnData,
           dataType: column.dataType,
-          style: column.style
+          style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, rows.length, columnIndex) }
         // 加入到行数据
         EXRow.push(itemData)
       })
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      EXDownloadChildren(rows, columns, item.children)
+      EXDownloadChildren(rows, columns, item.children, beforeChange)
     })
   }
 }
@@ -193,8 +201,31 @@ function GetColumnData(itemJson, columnField) {
               fontSize: 12,
               // (可选)字体名称
               fontName: '宋体',
+              // (可选)内容横向排版：Left、Center、Right
+              alignmentHor: 'Right',
+              // (可选)内容竖向排版：Top、Center、Bottom
+              alignmentVer: 'Top',
               // (可选)背景颜色
-              backgroundColor: '#FF0000'
+              backgroundColor: '#FF0000',
+              // (可选)合并单元格列表
+              merges:[
+                {
+                  // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+                  row: 1,
+                  // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+                  hor: 2,
+                  // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+                  ver: 2
+                },
+                {
+                  // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+                  row: 5,
+                  // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+                  hor: 2,
+                  // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+                  ver: 2
+                }
+              ]
             }
           }
         ]
@@ -317,7 +348,7 @@ function EXDownload (sheets, fileName, fileSuffix) {
         if (EXStyleString) { EXStyleStrings.push(EXStyleString) }
 
         // 获取 Cell 单元格
-        var EXCellString = EXCell(cell, dataType, styleID)
+        var EXCellString = EXCell(cell, dataType, styleID, rowIndex)
 
         // 拼接 Cell 单元格
         EXSheetString += EXCellString
@@ -403,20 +434,34 @@ function EXStyle (cell, styleID) {
     var isColor = styleKeys.includes('color')
     var isFontSize = styleKeys.includes('fontSize')
     var isFontName = styleKeys.includes('fontName')
+    var isAlignmentHor = styleKeys.includes('alignmentHor')
+    var isAlignmentVer = styleKeys.includes('alignmentVer')
     var isBGColor = styleKeys.includes('backgroundColor')
     // 字体
     if (isColor || isFontSize || isFontName) {
       // 有样式
       isStyle = true
       // Font 样式内容
-      var EXStyleFontString = `<Font`
-      if (isFontName) { EXStyleFontString += ` ss:FontName="${style.fontName}"` }
-      EXStyleFontString += ` x:CharSet="134"`
-      if (isFontSize) { EXStyleFontString += ` ss:Size="${style.fontSize}"` }
-      if (isColor) { EXStyleFontString += ` ss:Color="${style.color}"` }
-      EXStyleFontString += '/>'
+      var EXStyleSubString = '<Font'
+      if (isFontName) { EXStyleSubString += ` ss:FontName="${style.fontName}"` }
+      EXStyleSubString += ' x:CharSet="134"'
+      if (isFontSize) { EXStyleSubString += ` ss:Size="${style.fontSize}"` }
+      if (isColor) { EXStyleSubString += ` ss:Color="${style.color}"` }
+      EXStyleSubString += '/>'
       // 添加 Font 样式
-      EXStyleString += EXStyleFontString
+      EXStyleString += EXStyleSubString
+    }
+    // 内置居中样式
+    if (isAlignmentHor || isAlignmentVer) {
+      // 有样式
+      isStyle = true
+      // Alignment 样式内容
+      var EXStyleSubString = `<Alignment `
+      if (isAlignmentHor) { EXStyleSubString += ` ss:Horizontal="${style.alignmentHor}"` }
+      if (isAlignmentVer) { EXStyleSubString += ` ss:Vertical="${style.alignmentVer}"` }
+      EXStyleSubString += '/>'
+      // 添加 Font 样式
+      EXStyleString += EXStyleSubString
     }
     // 背景颜色
     if (isBGColor) {
@@ -427,15 +472,43 @@ function EXStyle (cell, styleID) {
     }
   }
   // Style 尾部
-  EXStyleString += `</Style>`
+  EXStyleString += '</Style>'
   // 返回
   return isStyle ? EXStyleString : ''
 }
 
 // 获取 Cell 单元格
-function EXCell (cell, dataType, styleID) {
+function EXCell (cell, dataType, styleID, rowIndex) {
+  // 样式对象
+  var style = cell.style || {}
+  // 样式 Keys
+  var styleKeys = Object.keys(style)
+  // 是否有合并单元格行数
+  var isMerges = styleKeys.includes('merges')
   // Cell 头部
-  var EXCellString = `<Cell ss:StyleID="${styleID}">`
+  var EXCellString = `<Cell ss:StyleID="${styleID}"`
+  // 是否有合并单元格 && 到了合并指定的行数
+  if (isMerges) {
+    // 合并列表
+    var merges = style.merges || []
+    // 找到当前行的合并样式
+    var merge = merges.find(merge => Number(merge.row) === rowIndex) || {}
+    // 有合并样式
+    if (merge) {
+      // 样式 Keys
+      var mergeKeys = Object.keys(merge)
+      // 是否存在横向合并
+      var isMergeHor = mergeKeys.includes('hor')
+      // 是否存在竖向合并
+      var isMergeVer = mergeKeys.includes('ver')
+      // 横向合并单元格
+      if (isMergeHor) { EXCellString += ` ss:MergeAcross="${merge.hor}"` }
+      // 竖向合并单元格
+      if (isMergeVer) { EXCellString += ` ss:MergeDown="${merge.ver}"` }
+    }
+  }
+  // Cell 头部结束符
+  EXCellString += '>'
   // Data 头部
   EXCellString += `<Data ss:Type="${dataType || ''}">`
   // Data 数据

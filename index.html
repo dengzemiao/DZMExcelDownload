@@ -61,19 +61,44 @@
         field: 'id'
       },
       {
-        name: '用户名称',
-        field: 'name',
+        name: '',
+        field: 'name'
         // (可选)单元格样式
-        style: {
-          // (可选)字体颜色
-          color: '#00ff00',
-          // (可选)字体大小
-          fontSize: 12,
-          // (可选)字体名称
-          fontName: '宋体',
-          // (可选)背景颜色
-          backgroundColor: '#FF0000'
-        }
+        // style: {
+        //   // (可选)样式属性是否支持标题使用，默认 false
+        //   supportTitle: true,
+        //   // (可选)字体颜色
+        //   color: '#00ff00',
+        //   // (可选)字体大小
+        //   fontSize: 12,
+        //   // (可选)字体名称
+        //   fontName: '宋体',
+        //   // (可选)内容横向排版：Left、Center、Right
+        //   alignmentHor: 'Center',
+        //   // (可选)内容竖向排版：Top、Center、Bottom
+        //   alignmentVer: 'Center',
+        //   // (可选)背景颜色
+        //   backgroundColor: '#FF0000',
+        //   // (可选)合并单元格列表
+        //   merges:[
+        //     {
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+        //       row: 1,
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       hor: 2,
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       ver: 2
+        //     },
+        //     {
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+        //       row: 5,
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       hor: 3,
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       ver: 2
+        //     }
+        //   ]
+        // }
       },
       {
         name: '用户年龄',
@@ -109,13 +134,28 @@
       }
     ]
     // 开始下载
-    EXDownloadManager(sheets, function (item, field, json) {
+    EXDownloadManager(sheets, function (item, field, json, row, col) {
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
       // 单元格内容：item.data
       // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
       // 单元格数据源：json
-      // console.log(item, item.data, item.dataType, field, json);
+      // console.log(item, item.data, item.dataType, field, json, row, col);
+
+      // 拦截修改样式 - 随机背景
+      item.style.backgroundColor = GetRandomColor()
+      // 合并位置处理
+      if (row === 0 && col === 0) {
+        // 定义合并样式
+        item.style.merges = [{
+          // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+          row: row,
+          // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+          hor: 2,
+          // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+          ver: 2
+        }]
+      }
 
       // 如果需要单独处理数据
       // item.data = '调整之后的新数据'
@@ -129,6 +169,16 @@
       // 返回处理好的值
       return item
     })
+
+    // 随机颜色
+    function GetRandomColor () {
+      var tags = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+      var color = '#'
+      for (var i = 0; i < 6; i++) {
+        color += tags[Math.floor(Math.random() * tags.length)]
+      }
+      return color
+    }
   </script>
 </body>
 </html>
