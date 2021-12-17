@@ -6,7 +6,14 @@
  * 推荐拷贝该方法进行扩展即可，如果需要处理单个字段，下面有写注释，判断处理即可
  *
  * @param {*} sheets 需要保存的数据源 (必填)
- * @param {*} columns 列数据名称与Key（必填）
+ * const sheets = {
+ *   // 单个 sheet 名字
+ *   name: 'sheet1',
+ *   // 单个 sheet 数据源
+ *   data: dataSource,
+ *   // 单个 sheet 列名称与读取key
+ *   columns: columns
+ * }
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
  * function beforeChange (item, field, json) {
  *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
@@ -17,10 +24,10 @@
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
- function EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix) {
+ function EXDownloadManager (sheets, beforeChange, fileName, fileSuffix) {
 
   // 检查数据
-  if (!sheets || !sheets.length || !columns || !columns.length) { return }
+  if (!sheets || !sheets.length) { return }
 
   // 设置空数据
   const EXSheets = []
@@ -29,6 +36,9 @@
   sheets.forEach((item) => {
     // EXRows 数据
     const EXRows = []
+
+    // 列名称与读取key
+    const columns = item.columns || []
 
     // 行标题数据
     // EXRow 数据

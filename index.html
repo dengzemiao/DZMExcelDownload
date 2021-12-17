@@ -54,15 +54,6 @@
         name: 'djy'
       }
     ]
-    // 将要保存的 sheets 数据源
-    const sheets = [
-      {
-        // 单个 sheet 名字
-        name: '用户数据',
-        // 单个 sheet 数据源
-        data: dataSource
-      }
-    ]
     // Excel 每一列的列头名字跟字段key，通过列名展示，列key获取数据源中对应的值作为单元格的值
     const columns = [
       {
@@ -87,8 +78,27 @@
         dataType: 'Date'
       }
     ]
+    // 将要保存的 sheets 数据源
+    const sheets = [
+      {
+        // 单个 sheet 名字
+        name: '用户数据1',
+        // 单个 sheet 数据源
+        data: dataSource,
+        // 单个 sheet 列名称与读取key
+        columns: columns
+      },
+      {
+        // 单个 sheet 名字
+        name: '用户数据2',
+        // 单个 sheet 数据源
+        data: dataSource,
+        // 单个 sheet 列名称与读取key
+        columns: columns
+      }
+    ]
     // 开始下载
-    EXDownloadManager(sheets, columns, function (item, field, json) {
+    EXDownloadManager(sheets, function (item, field, json) {
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
       // 单元格内容：item.data
