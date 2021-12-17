@@ -44,108 +44,180 @@ export default {
   mounted () {
     // 服务器获取到的数据源
     const dataSource = [
-    {
-      id: 1,
-      name: 'dzm',
-      // (可选)如果列表数据有子列表数据，也是支持的
-      children: [
-        {
-          id: 4,
-          name: 'dzm4',
-          children: [
-            {
-              id: 6,
-              name: 'dzm6'
-            },
-            {
-              id: 7,
-              name: 'dzm7'
+      {
+        id: 1,
+        name: 'dzm',
+        // (可选)如果列表数据有子列表数据，也是支持的
+        children: [
+          {
+            id: 4,
+            name: 'dzm4',
+            children: [
+              {
+                id: 6,
+                name: 'dzm6'
+              },
+              {
+                id: 7,
+                name: 'dzm7'
+              }
+            ]
+          },
+          {
+            id: 5,
+            name: 'dzm5',
+            // 多层级取值展示到 excel
+            info: {
+              age: 10
             }
-          ]
-        },
-        {
-          id: 5,
-          name: 'dzm5',
-          // 多层级取值展示到 excel
-          info: {
-            age: 10
           }
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'xyq',
-      // 字符串日期格式，如果需要导出为 Excel 日期格式需要拦截修改类型
-      // 格式支持 xxxx/xx/xx、xxxx-xx-xx、xxxx~xx~xx、xxxx年xx月xx日
-      birthday: '2015/12/20'
-    },
-    {
-      id: 3,
-      name: 'djy'
-    }
-    ]
-    // 将要保存的 sheets 数据源
-    const sheets = [
-        {
-          // 单个 sheet 名字
-          name: '用户数据',
-          // 单个 sheet 数据源
-          data: dataSource
-        }
+        ]
+      },
+      {
+        id: 2,
+        name: 'dzm2',
+        // 字符串日期格式，如果需要导出为 Excel 日期格式需要拦截修改类型
+        // 格式支持 xxxx/xx/xx、xxxx-xx-xx、xxxx~xx~xx、xxxx年xx月xx日
+        birthday: '2015/12/20'
+      },
+      {
+        id: 3,
+        name: 'djy'
+      }
     ]
     // Excel 每一列的列头名字跟字段key，通过列名展示，列key获取数据源中对应的值作为单元格的值
     const columns = [
-        {
-          name: '用户ID',
-          field: 'id'
-        },
-        {
-          name: '用户名称',
-          field: 'name'
-        },
-        {
-          name: '用户年龄',
-          // 多层级取值展示到 excel
-          // 例如：{ id: 1, info: { age: 10 } }  = 'info.age'
-          // 例如：{ id: 1, info: { detail: { age: 10 } } }  = 'info.detail.age'
-          field: 'info.age'
-        },
-        {
-          name: '生日',
-          field: 'birthday',
-          // 可以这里指定类型，也可以通过 beforeChange 拦截设定类型
-          dataType: 'Date'
-        }
+      {
+        name: '用户ID',
+        field: 'id'
+      },
+      {
+        name: '',
+        field: 'name'
+        // (可选)单元格样式
+        // style: {
+        //   // (可选)样式属性是否支持标题使用，默认 false
+        //   supportTitle: true,
+        //   // (可选)字体颜色
+        //   color: '#00ff00',
+        //   // (可选)字体大小
+        //   fontSize: 12,
+        //   // (可选)字体名称
+        //   fontName: '宋体',
+        //   // (可选)内容横向排版：Left、Center、Right
+        //   alignmentHor: 'Center',
+        //   // (可选)内容竖向排版：Top、Center、Bottom
+        //   alignmentVer: 'Center',
+        //   // (可选)背景颜色
+        //   backgroundColor: '#FF0000',
+        //   // (可选)合并单元格列表
+        //   merges:[
+        //     {
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+        //       row: 1,
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       hor: 2,
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       ver: 2
+        //     },
+        //     {
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+        //       row: 5,
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       hor: 3,
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       ver: 2
+        //     }
+        //   ]
+        // }
+      },
+      {
+        name: '用户年龄',
+        // 多层级取值展示到 excel
+        // 例如：{ id: 1, info: { age: 10 } }  = 'info.age'
+        // 例如：{ id: 1, info: { detail: { age: 10 } } }  = 'info.detail.age'
+        field: 'info.age'
+      },
+      {
+        name: '生日',
+        field: 'birthday',
+        // 也可以这里指定类型，也可以通过 beforeChange 拦截设定类型
+        dataType: 'Date'
+      }
+    ]
+    // 将要保存的 sheets 数据源
+    const sheets = [
+      {
+        // 单个 sheet 名字
+        name: '用户数据1',
+        // 单个 sheet 数据源
+        data: dataSource,
+        // 单个 sheet 列名称与读取key
+        columns: columns
+      },
+      {
+        // 单个 sheet 名字
+        name: '用户数据2',
+        // 单个 sheet 数据源
+        data: dataSource,
+        // 单个 sheet 列名称与读取key
+        columns: columns
+      }
     ]
     // 开始下载
-    // EXDownloadManager (sheets, columns, beforeChange, fileName, fileSuffix)
+    // EXDownloadManager (sheets, beforeChange, fileName, fileSuffix)
     // 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型
-    // function beforeChange (item, field) {
+    // function beforeChange (item, field, json, row, col) {
     //    // 转换为元单位
     //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
-    // this.$exdownload(sheets, columns)
-    this.$exdownload(sheets, columns, function (item, field, json) {
-        // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
-        // 判断处理单个字段
-        // 单元格内容：item.data
-        // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
-        // 单元格数据源：json
-        console.log(item, item.data, item.dataType, field, json);
+    // this.$exdownload(sheets)
+    this.$exdownload(sheets, function (item, field, json, row, col) {
+      // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
+      // 判断处理单个字段
+      // 单元格内容：item.data
+      // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
+      // 单元格数据源：json
+      // console.log(item, item.data, item.dataType, field, json, row, col);
 
-        // 如果需要单独处理数据
-        // item.data = '调整之后的新数据'
-        // dataType：Number、String、Boolean、Date
-        // item.dataType = 'Boolean'
+      // 拦截修改样式 - 随机背景
+      item.style.backgroundColor = GetRandomColor()
+      item.style.color = GetRandomColor()
+      // 合并位置处理
+      if (row === 0) {
+        // (可选)内容横向排版：Left、Center、Right
+        item.style.alignmentHor = 'Center',
+        // (可选)内容竖向排版：Top、Center、Bottom
+        item.style.alignmentVer = 'Center',
+        // 定义合并样式
+        item.style.merges = [{
+          // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+          row: row,
+          // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+          hor: 7
+          // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
+          // ver: 3
+        }]
+      }
 
-        // 将日期字符串改为 Excel 日期格式
-        // if (field === 'birthday') {
-        //   item.dataType = 'Date'
-        // }
+      // 如果需要单独处理数据
+      // item.data = '调整之后的新数据'
+      // item.dataType = 'Boolean'
 
-        // 返回处理好的值
+      // 将日期字符串改为 Excel 日期格式
+      // if (field === 'birthday') {
+      //   item.dataType = 'Date'
+      // }
+
+      // 返回处理好的值
+      if (row === 0) {
+        // 0 行 0 列返回显示，0 行其他列不返回，因为 0 行 0 列有合并单元格操作
+        if (col === 0) { return item
+        } else { return null }
+      } else {
+        // 其他行列正常返回
         return item
+      }
     })
   }
 }
