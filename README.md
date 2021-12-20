@@ -110,6 +110,18 @@ export default {
         //   alignmentVer: 'Center',
         //   // (可选)背景颜色
         //   backgroundColor: '#FF0000',
+        //   // (可选)单元格边框颜色
+        //   // 支持空格分开进行单边设置 borderColor: '#00ff00 #00ff00 #00ff00 #00ff00'，如果进行单边设置，没设置的边不显示，默认 #000000
+        //   borderColor: '#00ff00',
+        //   // (可选)单元格边框宽度
+        //   // 支持空格分开进行单边设置 borderWidth: '1 2 1 2'，如果进行单边设置，没设置的边不显示
+        //   borderWidth: 1,
+        //   // (可选)单元格边框显示位置：Left、Top、Right、Bottom
+        //   // 支持空格分开进行单边设置 borderPosition: 'Left Top Right Bottom'，支持空格分开进行单边设置，没设置的边不显示，默认:（空 || '' === borderPosition: 'Left Top Right Bottom'）
+        //   borderPosition: '',
+        //   // (可选)单元格边框样式：Continuous、Dash、Dot、DashDot、DashDotDot、Double，默认 Continuous
+        //   // 支持空格分开进行单边设置 borderStyle: 'Continuous Dash Dot DashDot'，如果进行单边设置，没设置的边不显示
+        //   borderStyle: 'Continuous',
         //   // (可选)合并单元格列表（row 不传则为每行，也可以放到数组底部，作为通用行使用，如果放到数组第0位，会直接使用这个通用样式，后面的样式不会在被使用上）
         //   merges:[
         //     {
@@ -184,6 +196,7 @@ export default {
       // 拦截修改样式 - 随机背景
       item.style.backgroundColor = GetRandomColor()
       item.style.color = GetRandomColor()
+      item.style.borderColor = GetRandomColor()
       // 合并位置处理
       if (row === 0) {
         // (可选)内容横向排版：Left、Center、Right

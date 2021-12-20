@@ -446,6 +446,9 @@ function EXStyle (cell, styleID) {
     var isAlignmentHor = styleKeys.includes('alignmentHor')
     var isAlignmentVer = styleKeys.includes('alignmentVer')
     var isBGColor = styleKeys.includes('backgroundColor')
+    var isBorderColor = styleKeys.includes('borderColor')
+    var isBorderWidth = styleKeys.includes('borderWidth')
+    var isBorderStyle = styleKeys.includes('borderStyle')
     // 字体
     if (isColor || isFontSize || isFontName) {
       // 有样式
@@ -465,7 +468,7 @@ function EXStyle (cell, styleID) {
       // 有样式
       isStyle = true
       // Alignment 样式内容
-      var EXStyleSubString = `<Alignment `
+      var EXStyleSubString = '<Alignment'
       if (isAlignmentHor) { EXStyleSubString += ` ss:Horizontal="${style.alignmentHor}"` }
       if (isAlignmentVer) { EXStyleSubString += ` ss:Vertical="${style.alignmentVer}"` }
       EXStyleSubString += '/>'
@@ -478,6 +481,51 @@ function EXStyle (cell, styleID) {
       isStyle = true
       // Style 内容
       EXStyleString += `<Interior ss:Color="${style.backgroundColor}" ss:Pattern="Solid"/>`
+    }
+    // 边框
+    if (isBorderColor || isBorderWidth || isBorderStyle) {
+      // debugger
+      // 有样式
+      isStyle = true
+      // 边框样式
+      var borderColor = `${style.borderColor || '#000000'}`
+      var borderWidth = `${(style.borderWidth === 0 || style.borderWidth === '0') ? 0 : (style.borderWidth || 1)}`
+      var borderPosition = `${style.borderPosition || 'Left Top Right Bottom'}`
+      var borderStyle = `${style.borderStyle || 'Continuous'}`
+      // 分解成字符串
+      var borderColors = borderColor.split(' ')
+      var borderWidths = borderWidth.split(' ')
+      var borderPositions = borderPosition.split(' ')
+      var borderStyles = borderStyle.split(' ')
+      // 进行填充
+      if (borderColors.length === 1) {
+        var temp = borderColors[0]
+        borderColors = [temp, temp, temp, temp]
+      }
+      if (borderWidths.length === 1) {
+        var temp = borderWidths[0]
+        borderWidths = [temp, temp, temp, temp]
+      }
+      if (borderStyles.length === 1) {
+        var temp = borderStyles[0]
+        borderStyles = [temp, temp, temp, temp]
+      }
+      // 取最小值
+      var count = Math.max(Math.min(borderColors.length, borderWidths.length, borderPositions.length, borderStyles.length), 0)
+      // Borders 样式内容
+      var EXStyleSubString = '<Borders>'
+      for (let index = 0; index < count; index++) {
+        // 取出样式
+        borderColor = borderColors[index]
+        borderWidth = borderWidths[index]
+        borderPosition = borderPositions[index]
+        borderStyle = borderStyles[index]
+        // 拼接
+        EXStyleSubString += `<Border ss:Position="${borderPosition}" ss:LineStyle="${borderStyle}" ss:Weight="${borderWidth}" ss:Color="${borderColor}"/>`
+      }
+      EXStyleSubString += '</Borders>'
+      // 添加 Borders 样式
+      EXStyleString += EXStyleSubString
     }
   }
   // Style 尾部
