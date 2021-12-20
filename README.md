@@ -75,7 +75,7 @@ export default {
       },
       {
         id: 2,
-        name: 'dzm2',
+        name: 'xyq',
         // 字符串日期格式，如果需要导出为 Excel 日期格式需要拦截修改类型
         // 格式支持 xxxx/xx/xx、xxxx-xx-xx、xxxx~xx~xx、xxxx年xx月xx日
         birthday: '2015/12/20'
@@ -92,7 +92,7 @@ export default {
         field: 'id'
       },
       {
-        name: '',
+        name: '用户名称',
         field: 'name'
         // (可选)单元格样式
         // style: {
@@ -110,23 +110,24 @@ export default {
         //   alignmentVer: 'Center',
         //   // (可选)背景颜色
         //   backgroundColor: '#FF0000',
-        //   // (可选)合并单元格列表
+        //   // (可选)合并单元格列表（row 不传则为每行，也可以放到数组底部，作为通用行使用，如果放到数组第0位，会直接使用这个通用样式，后面的样式不会在被使用上）
         //   merges:[
         //     {
-        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始，不传则为每行，为该列通用行
         //       row: 1,
-        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身
         //       hor: 2,
-        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
-        //       ver: 2
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身
+        //       ver: 1
         //     },
         //     {
-        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始
-        //       row: 5,
-        //       // (可选)横向合并几列单元格，默认 0 也就是自身，使用该参数 row 为必填
-        //       hor: 3,
-        //       // (可选)竖向合并几行单元格，默认 0 也就是自身，使用该参数 row 为必填
-        //       ver: 2
+        //       // 通用合并模板：相当于所有没有指定 row 的行都使用通用合并模板
+        //       // (可选)合并单元格从该字段这一列的第几行开始，索引从 0 开始，不传则为每行
+        //       // row: 3
+        //       // (可选)横向合并几列单元格，默认 0 也就是自身
+        //       hor: 3
+        //       // (可选)竖向合并几行单元格，默认 0 也就是自身
+        //       // ver: 1
         //     }
         //   ]
         // }
@@ -171,7 +172,7 @@ export default {
     //    // 转换为元单位
     //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
-    // this.$exdownload(sheets)
+    // this.$exdownload(sheets, columns)
     this.$exdownload(sheets, function (item, field, json, row, col) {
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
@@ -214,10 +215,9 @@ export default {
         // 0 行 0 列返回显示，0 行其他列不返回，因为 0 行 0 列有合并单元格操作
         if (col === 0) { return item
         } else { return null }
-      } else {
-        // 其他行列正常返回
-        return item
       }
+      // 其他行列正常返回
+      return item
     })
   }
 }
