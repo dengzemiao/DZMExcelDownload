@@ -218,6 +218,10 @@ function GetColumnData(itemJson, columnField) {
               alignmentVer: 'Top',
               // (可选)背景颜色
               backgroundColor: '#FF0000',
+              // (可选)行高，一行多列单元格，会取有行高值的最后一列使用，所以只要行高一样，可任意在一列设置行高，如果值不一样以最后有值的一列为准(单位：磅)
+              rowHeight: 40,
+              // (暂不支持)(可选)列宽，一列多行单元格，会取有列高值的最后一行使用，所以只要列高一样，可任意在一行设置列高，如果值不一样以最后有值的一行为准(单位：磅)
+              colWidth: 100,
               // (可选)单元格边框颜色
               // 支持空格分开进行单边设置 borderColor: '#00ff00 #00ff00 #00ff00 #00ff00'，如果进行单边设置，没设置的边不显示，默认 #000000
               borderColor: '#00ff00',
@@ -329,13 +333,36 @@ function EXDownload (sheets, fileName, fileSuffix) {
     // Table 头部
     EXSheetString += '<Table>'
 
+    // Column 内容
+    var EXSheetColumnString = ''
+
+    // Row 内容
+    var EXSheetRowString = ''
+
     // 便利 Row
     sheet.rows.forEach((row, rowIndex) => {
+
       // Row 头部
-      EXSheetString += '<Row>'
+      var EXSheetRowHeadString = '<Row>'
+
+      // Row 单元格内容
+      var EXSheetRowCellString = ''
 
       // 便利 Cell
       row.forEach((cell, cellIndex) => {
+
+        // 设置为 0 || 有值
+        if (cell.style.rowHeight === 0 || !!cell.style.rowHeight) {
+          // 更换 Row 头部
+          EXSheetRowHeadString = `<Row ss:Height="${cell.style.rowHeight}">`
+        }
+
+        // 获取每列列宽
+        // if (cell.style.colWidth === 0 || !!cell.style.colWidth) {
+        //   // 更换 Row 头部
+        //   EXSheetColumnString += `<Column ss:Index="${cellIndex + 1}" ss:AutoFitWidth="0" ss:Width="${cell.style.colWidth}"/>`
+        // }
+        
         // 组合 StyleID
         var styleID = `s${sheetIndex}-${rowIndex}-${cellIndex}`
 
@@ -374,13 +401,25 @@ function EXDownload (sheets, fileName, fileSuffix) {
         var EXCellString = EXCell(cell, dataType, styleID, rowIndex)
 
         // 拼接 Cell 单元格
-        EXSheetString += EXCellString
+        EXSheetRowCellString += EXCellString
 
       }) // 便利 Cell
 
-      // Row 尾部
-      EXSheetString += '</Row>'
+      // 拼接 Row 头部
+      EXSheetRowString += EXSheetRowHeadString
+
+      // 拼接 Row 单元格内容
+      EXSheetRowString += EXSheetRowCellString
+
+      // 拼接 Row 尾部
+      EXSheetRowString += '</Row>'
     }) // 便利 Cell
+
+    // 拼接 Column 内容
+    EXSheetString += EXSheetColumnString
+
+    // 拼接 Row 内容
+    EXSheetString += EXSheetRowString
 
     // Table 尾部
     EXSheetString += '</Table>'
@@ -503,7 +542,7 @@ function EXStyle (cell, styleID) {
       isStyle = true
       // 边框样式
       var borderColor = `${style.borderColor || '#000000'}`
-      var borderWidth = `${(style.borderWidth === 0 || style.borderWidth === '0') ? 0 : (style.borderWidth || 1)}`
+      var borderWidth = `${(style.borderWidth === 0) ? 0 : (style.borderWidth || 1)}`
       var borderPosition = `${style.borderPosition || 'Left Top Right Bottom'}`
       var borderStyle = `${style.borderStyle || 'Continuous'}`
       // 分解成字符串
