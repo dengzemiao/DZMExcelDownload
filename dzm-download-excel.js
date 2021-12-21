@@ -512,8 +512,11 @@ function EXStyle (cell, styleID) {
     var isAlignmentVer = styleKeys.includes('alignmentVer')
     var isBGColor = styleKeys.includes('backgroundColor')
     var isBorderColor = styleKeys.includes('borderColor')
+    if (isBorderColor) { isBorderColor = !!style.borderColor }
     var isBorderWidth = styleKeys.includes('borderWidth')
+    if (isBorderWidth) { isBorderWidth = !!style.borderWidth }
     var isBorderStyle = styleKeys.includes('borderStyle')
+    if (isBorderStyle) { isBorderStyle = !!style.borderStyle }
     // 字体
     if (isColor || isFontSize || isFontName || isFontBold) {
       // 有样式
