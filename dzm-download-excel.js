@@ -46,12 +46,18 @@ function EXDownloadManager (sheets, beforeChange, fileName, fileSuffix) {
     var EXRow = []
     // 通过便利列数据获得字段数据
     columns.forEach((column, columnIndex) => {
+      // 获取 keys
+      var keys = Object.keys(column.style || {})
       // 样式是否需要支持标题栏
-      var supportTitle = column.style ? column.style.supportTitle : false
+      var supportTitle = false
+      if (keys.includes('supportTitle')) { supportTitle = column.style.supportTitle }
+      // 默认样式
+      var defaultStyle = {}
+      if (keys.includes('colWidth')) { defaultStyle = { colWidth: column.style.colWidth } }
       // 单元格数据
       var itemData = {
         data: column.name,
-        style: supportTitle ? column.style : {}
+        style: supportTitle ? column.style : defaultStyle
       }
       // 准备将数据加入 Row 中
       if (beforeChange) { itemData = beforeChange(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex) }
@@ -220,7 +226,7 @@ function GetColumnData(itemJson, columnField) {
               backgroundColor: '#FF0000',
               // (可选)行高，一行多列单元格，会取有行高值的最后一列使用，所以只要行高一样，可任意在一列设置行高，如果值不一样以最后有值的一列为准(单位：磅)
               rowHeight: 40,
-              // (暂不支持)(可选)列宽，一列多行单元格，会取有列高值的最后一行使用，所以只要列高一样，可任意在一行设置列高，如果值不一样以最后有值的一行为准(单位：磅)
+              // (可选)列宽，一列多行单元格，固定取每列的 0 行位置单元格列宽，目前与横向合并单元格存在定位冲突，也就是暂时不支持横向合并单元格时使用列宽属性(单位：磅)
               colWidth: 100,
               // (可选)单元格边框颜色
               // 支持空格分开进行单边设置 borderColor: '#00ff00 #00ff00 #00ff00 #00ff00'，如果进行单边设置，没设置的边不显示，默认 #000000
@@ -357,11 +363,14 @@ function EXDownload (sheets, fileName, fileSuffix) {
           EXSheetRowHeadString = `<Row ss:Height="${cell.style.rowHeight}">`
         }
 
-        // 获取每列列宽
-        // if (cell.style.colWidth === 0 || !!cell.style.colWidth) {
-        //   // 更换 Row 头部
-        //   EXSheetColumnString += `<Column ss:Index="${cellIndex + 1}" ss:AutoFitWidth="0" ss:Width="${cell.style.colWidth}"/>`
-        // }
+        // 0 行时获取所有列宽
+        if (rowIndex === 0) {
+          // 设置为 0 || 有值
+          if (cell.style.colWidth === 0 || !!cell.style.colWidth) {
+            // 更换 Row 头部
+            EXSheetColumnString += `<Column ss:Index="${cellIndex + 1}" ss:AutoFitWidth="0" ss:Width="${cell.style.colWidth}"/>`
+          }
+        }
         
         // 组合 StyleID
         var styleID = `s${sheetIndex}-${rowIndex}-${cellIndex}`
