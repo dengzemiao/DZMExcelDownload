@@ -109,6 +109,8 @@ export default {
         //   fontSize: 12,
         //   // (可选)字体名称
         //   fontName: '宋体',
+        //   // (可选)字体加粗：0 | 1
+        //   fontBold: 1,
         //   // (可选)内容横向排版：Left、Center、Right
         //   alignmentHor: 'Center',
         //   // (可选)内容竖向排版：Top、Center、Bottom
@@ -210,9 +212,9 @@ export default {
       // 合并位置处理
       if (row === 0) {
         // (可选)内容横向排版：Left、Center、Right
-        item.style.alignmentHor = 'Center',
+        item.style.alignmentHor = 'Center'
         // (可选)内容竖向排版：Top、Center、Bottom
-        item.style.alignmentVer = 'Center',
+        item.style.alignmentVer = 'Center'
         // (可选)行高
         item.style.rowHeight = 40
         // 定义合并样式

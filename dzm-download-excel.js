@@ -218,6 +218,8 @@ function GetColumnData(itemJson, columnField) {
               fontSize: 12,
               // (可选)字体名称
               fontName: '宋体',
+              // (可选)字体加粗：0 | 1
+              fontBold: 0,
               // (可选)内容横向排版：Left、Center、Right
               alignmentHor: 'Right',
               // (可选)内容竖向排版：Top、Center、Bottom
@@ -505,6 +507,7 @@ function EXStyle (cell, styleID) {
     var isColor = styleKeys.includes('color')
     var isFontSize = styleKeys.includes('fontSize')
     var isFontName = styleKeys.includes('fontName')
+    var isFontBold = styleKeys.includes('fontBold')
     var isAlignmentHor = styleKeys.includes('alignmentHor')
     var isAlignmentVer = styleKeys.includes('alignmentVer')
     var isBGColor = styleKeys.includes('backgroundColor')
@@ -512,7 +515,7 @@ function EXStyle (cell, styleID) {
     var isBorderWidth = styleKeys.includes('borderWidth')
     var isBorderStyle = styleKeys.includes('borderStyle')
     // 字体
-    if (isColor || isFontSize || isFontName) {
+    if (isColor || isFontSize || isFontName || isFontBold) {
       // 有样式
       isStyle = true
       // Font 样式内容
@@ -521,6 +524,7 @@ function EXStyle (cell, styleID) {
       EXStyleSubString += ' x:CharSet="134"'
       if (isFontSize) { EXStyleSubString += ` ss:Size="${style.fontSize}"` }
       if (isColor) { EXStyleSubString += ` ss:Color="${style.color}"` }
+      if (isFontBold) { EXStyleSubString += ` ss:Bold="${style.fontBold}"` }
       EXStyleSubString += '/>'
       // 添加 Font 样式
       EXStyleString += EXStyleSubString
