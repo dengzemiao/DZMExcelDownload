@@ -191,13 +191,13 @@ export default {
     // 开始下载
     // EXDownloadManager (sheets, beforeChange, fileName, fileSuffix)
     // 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型
-    // function beforeChange (item, field, json, row, col) {
+    // function beforeChange (item, field, json, sheetIndex, row, col, columnCount, rowCount) {
     //    // 转换为元单位
     //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
     // this.$exdownload(sheets, columns)
-    this.$exdownload(sheets, function (item, field, json, index, row, col) {
-      // index: 第几个sheet row: 第几行 col: 第几列
+    this.$exdownload(sheets, function (item, field, json, sheetIndex, row, col, columnCount, rowCount) {
+      // index: 第几个sheet，row: 第几行，col: 第几列，columnCount: 当前 sheet 总列数，rowCount: 当前 sheet 总行数
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
       // 单元格内容：item.data
