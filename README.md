@@ -185,7 +185,8 @@ export default {
     //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
     // this.$exdownload(sheets, columns)
-    this.$exdownload(sheets, function (item, field, json, row, col) {
+    this.$exdownload(sheets, function (item, field, json, index, row, col) {
+      // index: 第几个sheet row: 第几行 col: 第几列
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
       // 单元格内容：item.data

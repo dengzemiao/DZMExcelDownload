@@ -15,7 +15,8 @@
  *   columns: columns
  * }
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
- * function beforeChange (item, field, json, row, col) {
+ * function beforeChange (item, field, json, index, row, col) {
+ *   // index: 第几个sheet row: 第几行 col: 第几列
  *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
@@ -24,7 +25,7 @@
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
- function EXDownloadManager (sheets, beforeChange, fileName, fileSuffix) {
+function EXDownloadManager (sheets, beforeChange, fileName, fileSuffix) {
 
   // 检查数据
   if (!sheets || !sheets.length) { return }
@@ -33,7 +34,7 @@
   var EXSheets = []
 
   // 遍历数据
-  sheets.forEach((item) => {
+  sheets.forEach((item, sheetIndex) => {
     // EXRows 数据
     var EXRows = []
 
@@ -53,7 +54,7 @@
         style: supportTitle ? column.style : {}
       }
       // 准备将数据加入 Row 中
-      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, EXRows.length, columnIndex) }
+      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex) }
       // 有值 && 不隐藏
       if (itemData && !itemData.hide) {
         // 加入到行列表
@@ -80,7 +81,7 @@
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, EXRows.length, columnIndex) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, EXRows.length, columnIndex) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -91,7 +92,7 @@
       EXRows.push(EXRow)
 
       // 行数据中如果还有子列表数据
-      EXDownloadChildren(EXRows, columns, item.children, beforeChange)
+      EXDownloadChildren(EXRows, columns, item.children, sheetIndex, beforeChange)
     })
 
     // EXSheet 数据
@@ -111,9 +112,10 @@
  * @param {*} rows 行列表数组
  * @param {*} columns 列数据名称与Key（必填）
  * @param {*} children 数据源子列表
+ * @param {*} sheetIndex sheet索引
  * @param {*} beforeChange 取出单个数据准备加入到行数据中
  */
-function EXDownloadChildren (rows, columns, children, beforeChange) {
+function EXDownloadChildren (rows, columns, children, sheetIndex, beforeChange) {
   // 获得子列表
   var list = children || []
   // 子列表是否有数据
@@ -133,7 +135,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, rows.length, columnIndex) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, rows.length, columnIndex) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -143,7 +145,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange) {
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      EXDownloadChildren(rows, columns, item.children, beforeChange)
+      EXDownloadChildren(rows, columns, item.children, sheetIndex, beforeChange)
     })
   }
 }
