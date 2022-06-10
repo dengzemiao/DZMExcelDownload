@@ -15,8 +15,8 @@
  *   columns: columns
  * }
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
- * function beforeChange (item, field, json, sheetIndex, row, col, columnCount, rowCount) {
- *   // sheetIndex: 第几个sheet，row: 第几行，col: 第几列，columnCount: 当前 sheet 总列数，rowCount: 当前 sheet 总行数
+ * function beforeChange (item, field, json, sheetIndex, row, col, rowCount, colCount) {
+ *   // sheetIndex: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
  *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
@@ -65,7 +65,7 @@
         style: supportTitle ? column.style : defaultStyle
       }
       // 准备将数据加入 Row 中
-      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex, columnCount, rowCount) }
+      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
       // 有值 && 不隐藏
       if (itemData && !itemData.hide) {
         // 加入到行列表
@@ -90,7 +90,7 @@
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, EXRows.length, columnIndex, columnCount, rowCount) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -101,7 +101,7 @@
       EXRows.push(EXRow)
 
       // 行数据中如果还有子列表数据
-      EXDownloadChildren(EXRows, columns, item.children, beforeChange, sheetIndex, columnCount, rowCount)
+      EXDownloadChildren(EXRows, columns, item.children, beforeChange, sheetIndex, rowCount, columnCount)
     })
 
     // EXSheet 数据
@@ -123,10 +123,10 @@
  * @param {*} children 数据源子列表
  * @param {*} beforeChange 取出单个数据准备加入到行数据中
  * @param {*} sheetIndex 第几个 sheet 索引
- * @param {*} columnCount 当前 sheet 总列数
  * @param {*} rowCount 当前 sheet 总行数
+ * @param {*} columnCount 当前 sheet 总列数
  */
-function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, columnCount, rowCount) {
+function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, rowCount, columnCount) {
   // 获得子列表
   var list = children || []
   // 子列表是否有数据
@@ -146,7 +146,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, 
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, rows.length, columnIndex, columnCount, rowCount) }
+        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, rows.length, columnIndex, rowCount, columnCount) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -156,7 +156,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, 
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      EXDownloadChildren(rows, columns, item.children, beforeChange, sheetIndex, columnCount, rowCount)
+      EXDownloadChildren(rows, columns, item.children, beforeChange, sheetIndex, rowCount, columnCount)
     })
   }
 }
