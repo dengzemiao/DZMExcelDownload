@@ -194,19 +194,19 @@ export default {
     // 开始下载
     // EXDownloadManager (sheets, beforeChange, fileName, fileSuffix)
     // 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型
-    // function beforeChange (item, field, json, sheetIndex, row, col, columnCount, rowCount) {
+    // function beforeChange (item, field, json, sheetIndex, row, col, rowCount, colCount) {
     //    // 转换为元单位
     //    return field === 'money' ? (item.data = item.data / 100) : item
     // }
     // this.$exdownload(sheets, columns)
-    this.$exdownload(sheets, function (item, field, json, sheetIndex, row, col, columnCount, rowCount) {
-      // index: 第几个sheet，row: 第几行，col: 第几列，columnCount: 当前 sheet 总列数，rowCount: 当前 sheet 总行数
+    this.$exdownload(sheets, function (item, field, json, sheetIndex, row, col, rowCount, colCount) {
+      // index: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
       // 单元格内容：item.data
       // 单元格类型：item.dataType（默认空，会自动识别，有值会优先使用指定类型）
       // 单元格数据源：json
-      // console.log(item, item.data, item.dataType, field, json, row, col);
+      // console.log(item, item.data, item.dataType, field, json, row, col, rowCount, colCount);
 
       // 拦截修改样式 - 随机背景
       item.style.backgroundColor = GetRandomColor()
