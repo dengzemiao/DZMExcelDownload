@@ -16,8 +16,8 @@
  * }
  * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
  * function beforeChange (item, field, json, sheetIndex, row, col, rowCount, colCount) {
- *   // sheetIndex: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
  *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
+ *   // sheetIndex: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
  *   return field === 'money' ? (item.data = item.data / 100) : item
