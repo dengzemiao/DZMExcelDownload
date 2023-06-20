@@ -8,7 +8,7 @@
 </head>
 <body>
   <!-- 导入组件 -->
-  <script src="./dzm-download-excel.js"></script>
+  <script src="./excel-export.js"></script>
   <!-- 使用 -->
   <script>
     // 服务器获取到的数据源
@@ -159,7 +159,7 @@
       }
     ]
     // 开始下载
-    EXDownloadManager(sheets, function (item, field, json, sheetIndex, row, col, rowCount, colCount) {
+    ExcelExport(sheets, function (item, field, json, sheetIndex, row, col, rowCount, colCount) {
        // index: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段

@@ -2,7 +2,7 @@
  *
  * 将指定数据保存为 Excel
  * 这里只是一个通用封装
- * 如果需要特殊处理，可自行按照下面 EXDownload() 需要的数据源自行组装即可
+ * 如果需要特殊处理，可自行按照下面 ExcelExport() 需要的数据源自行组装即可
  * 推荐拷贝该方法进行扩展即可，如果需要处理单个字段，下面有写注释，判断处理即可
  *
  * @param {*} sheets 需要保存的数据源 (必填)
@@ -14,10 +14,10 @@
  *   // 单个 sheet 列名称与读取key
  *   columns: columns
  * }
- * @param {*} beforeChange 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
- * function beforeChange (item, field, json, sheetIndex, row, col, rowCount, colCount) {
- *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
+ * @param {*} beforeWrite 单元格数据准备插入行列表之前，可拦截修修改单元格数据或类型（选填）
+ * function beforeWrite (item, field, json, sheetIndex, row, col, rowCount, colCount) {
  *   // sheetIndex: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
+ *   // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
  *   // 如果有单独字段判断处理可以在此处进行
  *   // 转换为元单位
  *   return field === 'money' ? (item.data = item.data / 100) : item
@@ -25,7 +25,7 @@
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
- function EXDownloadManager (sheets, beforeChange, fileName, fileSuffix) {
+function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
 
   // 检查数据
   if (!sheets || !sheets.length) { return }
@@ -41,39 +41,44 @@
     // 列数据（列名称与读取key）
     var columns = item.columns || []
     var columnCount = columns.length
-    
+
     // 行数据
     var dataSource = item.data || []
     var rowCount = dataSource.length
 
     // 行标题数据
-    // EXRow 数据
-    var EXRow = []
-    // 通过便利列数据获得字段数据
-    columns.forEach((column, columnIndex) => {
-      // 获取 keys
-      var keys = Object.keys(column.style || {})
-      // 样式是否需要支持标题栏
-      var supportTitle = false
-      if (keys.includes('supportTitle')) { supportTitle = column.style.supportTitle }
-      // 默认样式
-      var defaultStyle = {}
-      if (keys.includes('colWidth')) { defaultStyle = { colWidth: column.style.colWidth } }
-      // 单元格数据
-      var itemData = {
-        data: column.name,
-        style: supportTitle ? column.style : defaultStyle
-      }
-      // 准备将数据加入 Row 中
-      if (beforeChange) { itemData = beforeChange(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
-      // 有值 && 不隐藏
-      if (itemData && !itemData.hide) {
-        // 加入到行列表
-        EXRow.push(itemData)
-      }
-    })
-    // 放到 EXRows 里面
-    EXRows.push(EXRow)
+    // 是否所有标题都为空
+    const isEmpty = columns.every(column => !column.name)
+    // 标题存在有值
+    if (!isEmpty) {
+      // EXRow 数据
+      var EXRow = []
+      // 通过便利列数据获得字段数据
+      columns.forEach((column, columnIndex) => {
+        // 获取 keys
+        var keys = Object.keys(column.style || {})
+        // 样式是否需要支持标题栏
+        var supportTitle = false
+        if (keys.includes('supportTitle')) { supportTitle = column.style.supportTitle }
+        // 默认样式
+        var defaultStyle = {}
+        if (keys.includes('colWidth')) { defaultStyle = { colWidth: column.style.colWidth } }
+        // 单元格数据
+        var itemData = {
+          data: column.name,
+          style: supportTitle ? column.style : defaultStyle
+        }
+        // 准备将数据加入 Row 中
+        if (beforeWrite) { itemData = beforeWrite(itemData, column.field, column, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
+        // 有值 && 不隐藏
+        if (itemData && !itemData.hide) {
+          // 加入到行列表
+          EXRow.push(itemData)
+        }
+      })
+      // 放到 EXRows 里面
+      EXRows.push(EXRow)
+    }
 
     // 便利数据源
     dataSource.forEach((item) => {
@@ -90,7 +95,7 @@
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
+        if (beforeWrite) { itemData = beforeWrite(itemData, column.field, item, sheetIndex, EXRows.length, columnIndex, rowCount, columnCount) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -101,7 +106,7 @@
       EXRows.push(EXRow)
 
       // 行数据中如果还有子列表数据
-      EXDownloadChildren(EXRows, columns, item.children, beforeChange, sheetIndex, rowCount, columnCount)
+      ExcelExportChildren(EXRows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
     })
 
     // EXSheet 数据
@@ -113,7 +118,7 @@
     EXSheets.push(EXSheet)
   })
   // 开始下载
-  EXDownload(EXSheets, fileName, fileSuffix)
+  ExcelExportManager(EXSheets, fileName, fileSuffix)
 }
 
 /**
@@ -121,12 +126,12 @@
  * @param {*} rows 行列表数组
  * @param {*} columns 列数据名称与Key（必填）
  * @param {*} children 数据源子列表
- * @param {*} beforeChange 取出单个数据准备加入到行数据中
+ * @param {*} beforeWrite 取出单个数据准备加入到行数据中
  * @param {*} sheetIndex 第几个 sheet 索引
  * @param {*} rowCount 当前 sheet 总行数
  * @param {*} columnCount 当前 sheet 总列数
  */
-function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, rowCount, columnCount) {
+function ExcelExportChildren(rows, columns, children, beforeWrite, sheetIndex, rowCount, columnCount) {
   // 获得子列表
   var list = children || []
   // 子列表是否有数据
@@ -146,7 +151,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, 
           style: column.style || {}
         }
         // 准备将数据加入 Row 中
-        if (beforeChange) { itemData = beforeChange(itemData, column.field, item, sheetIndex, rows.length, columnIndex, rowCount, columnCount) }
+        if (beforeWrite) { itemData = beforeWrite(itemData, column.field, item, sheetIndex, rows.length, columnIndex, rowCount, columnCount) }
         // 有值 && 不隐藏
         if (itemData && !itemData.hide) {
           // 加入到行列表
@@ -156,7 +161,7 @@ function EXDownloadChildren (rows, columns, children, beforeChange, sheetIndex, 
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      EXDownloadChildren(rows, columns, item.children, beforeChange, sheetIndex, rowCount, columnCount)
+      ExcelExportChildren(rows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
     })
   }
 }
@@ -179,7 +184,7 @@ function GetColumnData(itemJson, columnField) {
     // 当前索引
     var index = 0
     // 循环得到单元格数据
-    while (index <= (fields.length -1)) {
+    while (index <= (fields.length - 1)) {
       // 取得当前层字段数据
       columnData = columnData[`${fields[index]}`]
       // 如果取得空，则停止
@@ -190,7 +195,7 @@ function GetColumnData(itemJson, columnField) {
   } else {
     // 如果就一个字段，直接获取即可
     columnData = itemJson[columnField]
-  } 
+  }
   // 返回单元格数据
   return columnData
 }
@@ -303,7 +308,7 @@ function GetColumnData(itemJson, columnField) {
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
  * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
  */
-function EXDownload (sheets, fileName, fileSuffix) {
+function ExcelExportManager(sheets, fileName, fileSuffix) {
   // 数据
   var EXSheets = sheets
 
@@ -378,7 +383,7 @@ function EXDownload (sheets, fileName, fileSuffix) {
             EXSheetColumnString += `<Column ss:Index="${cellIndex + 1}" ss:AutoFitWidth="0" ss:Width="${cell.style.colWidth}"/>`
           }
         }
-        
+
         // 组合 StyleID
         var styleID = `s${sheetIndex}-${rowIndex}-${cellIndex}`
 
@@ -490,7 +495,7 @@ function EXDownload (sheets, fileName, fileSuffix) {
 }
 
 // 获取 Style
-function EXStyle (cell, styleID) {
+function EXStyle(cell, styleID) {
   // 是否需要提供样式支持
   var isStyle = false
   // 样式对象
@@ -609,7 +614,7 @@ function EXStyle (cell, styleID) {
 }
 
 // 获取 Cell 单元格
-function EXCell (cell, dataType, styleID, rowIndex) {
+function EXCell(cell, dataType, styleID, rowIndex) {
   // 样式对象
   var style = cell.style || {}
   // 样式 Keys
@@ -653,7 +658,7 @@ function EXCell (cell, dataType, styleID, rowIndex) {
 }
 
 // 获取 日期天数
-function EXDateNumber (data) {
+function EXDateNumber(data) {
   // 是否有数据
   if (data) {
     // 开始时间
@@ -674,7 +679,8 @@ function EXDateNumber (data) {
 }
 
 // 导出
-module.exports = {
-  EXDownloadManager,
-  EXDownload
-}
+// export {
+//   ExcelExport as ex,
+//   ExcelExport as write,
+//   ExcelExport as Export
+// }
