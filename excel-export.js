@@ -361,7 +361,7 @@ function ExportExcel(sheets, fileName, fileSuffix) {
   // 便利 Worksheet
   EXSheets.forEach((sheet, sheetIndex) => {
     // Worksheet 头部
-    var EXSheetString = `<Worksheet ss:Name="${sheet.name}">`
+    var EXSheetString = `<Worksheet ss:Name="${sheet.name || `Sheet${sheetIndex + 1}`}">`
     // Table 头部
     EXSheetString += '<Table>'
     // Column 内容

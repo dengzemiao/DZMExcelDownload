@@ -143,7 +143,7 @@
     const sheets = [
       {
         // 单个 sheet 名字
-        name: '用户数据1',
+        // name: '用户数据1',
         // 单个 sheet 数据源
         data: dataSource,
         // 单个 sheet 列名称与读取key
@@ -151,7 +151,7 @@
       },
       {
         // 单个 sheet 名字
-        name: '用户数据2',
+        // name: '用户数据2',
         // 单个 sheet 数据源
         data: dataSource,
         // 单个 sheet 列名称与读取key
@@ -208,7 +208,7 @@
       }
       // 其他行列正常返回
       return item
-    }, null, 'csv')
+    })
 
     // 随机颜色
     function GetRandomColor () {
