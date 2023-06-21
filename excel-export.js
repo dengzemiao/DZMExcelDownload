@@ -2,7 +2,7 @@
  *
  * 将指定数据保存为 Excel
  * 这里只是一个通用封装
- * 如果需要特殊处理，可自行按照下面 ExcelExport() 需要的数据源自行组装即可
+ * 如果需要特殊处理，可自行按照下面 Export() 需要的数据源自行组装即可
  * 推荐拷贝该方法进行扩展即可，如果需要处理单个字段，下面有写注释，判断处理即可
  *
  * @param {*} sheets 需要保存的数据源 (必填)
@@ -22,32 +22,29 @@
  *   // 转换为元单位
  *   return field === 'money' ? (item.data = item.data / 100) : item
  * }
- * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
- * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
+ * @param {*} fileName 文件名称（选填，默认当前时间）
+ * @param {*} fileSuffix 文件后缀（选填，默认 xls，支持 xls、xlsx、txt、csv)
  */
-function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
-
+function Export(sheets, beforeWrite, fileName, fileSuffix) {
   // 检查数据
   if (!sheets || !sheets.length) { return }
-
   // 设置空数据
   var EXSheets = []
-
+  // 文件名
+  var EXFileName = fileName || EXNowTime()
+  // 文件后缀
+  var EXFileSuffix = fileSuffix || 'xls'
   // 遍历数据
   sheets.forEach((item, sheetIndex) => {
     // EXRows 数据
     var EXRows = []
-
     // 列数据（列名称与读取key）
     var columns = item.columns || []
     var columnCount = columns.length
-
     // 行数据
     var dataSource = item.data || []
     var rowCount = dataSource.length
-
-    // 行标题数据
-    // 是否所有标题都为空
+    // 行标题数据，是否所有标题都为空
     const isEmpty = columns.every(column => !column.name)
     // 标题存在有值
     if (!isEmpty) {
@@ -79,7 +76,6 @@ function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
       // 放到 EXRows 里面
       EXRows.push(EXRow)
     }
-
     // 便利数据源
     dataSource.forEach((item) => {
       // EXRow 数据
@@ -104,11 +100,9 @@ function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
       })
       // 放到 EXRows 里面
       EXRows.push(EXRow)
-
       // 行数据中如果还有子列表数据
-      ExcelExportChildren(EXRows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
+      ExportChildren(EXRows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
     })
-
     // EXSheet 数据
     var EXSheet = {
       name: item.name,
@@ -118,7 +112,11 @@ function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
     EXSheets.push(EXSheet)
   })
   // 开始下载
-  ExcelExportManager(EXSheets, fileName, fileSuffix)
+  if (['xls', 'xlsx'].includes(EXFileSuffix)) {
+    ExportExcel(EXSheets, EXFileName, EXFileSuffix)
+  } else if (['csv', 'txt'].includes(EXFileSuffix)) {
+    ExportCsv(EXSheets, EXFileName, EXFileSuffix)
+  }
 }
 
 /**
@@ -131,7 +129,7 @@ function ExcelExport(sheets, beforeWrite, fileName, fileSuffix) {
  * @param {*} rowCount 当前 sheet 总行数
  * @param {*} columnCount 当前 sheet 总列数
  */
-function ExcelExportChildren(rows, columns, children, beforeWrite, sheetIndex, rowCount, columnCount) {
+function ExportChildren(rows, columns, children, beforeWrite, sheetIndex, rowCount, columnCount) {
   // 获得子列表
   var list = children || []
   // 子列表是否有数据
@@ -161,7 +159,7 @@ function ExcelExportChildren(rows, columns, children, beforeWrite, sheetIndex, r
       // 放到 EXRows 里面
       rows.push(EXRow)
       // 解析子列表
-      ExcelExportChildren(rows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
+      ExportChildren(rows, columns, item.children, beforeWrite, sheetIndex, rowCount, columnCount)
     })
   }
 }
@@ -200,7 +198,41 @@ function GetColumnData(itemJson, columnField) {
   return columnData
 }
 
-// ---------------------------------------------------- 下面为核心代码 ---------------------------------------
+// ================================================================= 导出 csv
+
+/**
+ * @description: 将指定数据保存为 csv
+ * @param {*} sheets Sheets 数据源 (必填，看上面格式)
+ * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
+ * @param {*} fileSuffix 文件后缀
+ */
+function ExportCsv(sheets, fileName, fileSuffix) {
+  // 数据
+  var EXSheets = sheets
+  // 检查是否有数据
+  if (!EXSheets || !EXSheets.length) { return }
+  // 便利 Sheets
+  EXSheets.forEach((sheet, sheetIndex) => {
+    // Sheet 内容
+    var EXSheetDatas = []
+    // 便利 Rows
+    sheet.rows.forEach((row) => {
+      // Row 内容
+      var EXSheetRowDatas = []
+      // 便利 Row
+      row.forEach((item) => {
+        // 组装行数据列表
+        EXSheetRowDatas.push(item.data || '')
+      })
+      // 添加
+      EXSheetDatas.push(EXSheetRowDatas.join())
+    })
+    // 下载
+    EXDownload(EXSheetDatas.join('\r\n'), sheet.name || `${fileName}${sheetIndex === 0 ? '' : `-${sheetIndex}`}`, fileSuffix)
+  })
+}
+
+// ================================================================= 导出 excel
 
 /*
   下面 sheets 数据格式：
@@ -301,31 +333,20 @@ function GetColumnData(itemJson, columnField) {
 */
 
 /**
- *
- * 将指定数据保存为 Excel
- *
+ * @description: 将指定数据保存为 Excel
  * @param {*} sheets Sheets 数据源 (必填，看上面格式)
  * @param {*} fileName 文件名称（选填，默认所有 sheet 名称拼接）
- * @param {*} fileSuffix 文件后缀（选填，默认 xls，(目前仅支持 xls，xlsx))
+ * @param {*} fileSuffix 文件后缀
  */
-function ExcelExportManager(sheets, fileName, fileSuffix) {
+function ExportExcel(sheets, fileName, fileSuffix) {
   // 数据
   var EXSheets = sheets
-
   // 检查是否有数据
   if (!EXSheets || !EXSheets.length) { return }
-
-  // 文件名
-  var EXFileName = fileName || ''
-
-  // 文件后缀
-  var EXFileSuffix = fileSuffix || 'xls'
-
   // 头部
   var EXString = `
   <?xml version="1.0" encoding="UTF-8"?>
   <?mso-application progid= "Excel.Sheet"?>`
-
   // Workbook 头部
   EXString += `<Workbook
   xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -333,48 +354,33 @@ function ExcelExportManager(sheets, fileName, fileSuffix) {
   xmlns:x="urn:schemas-microsoft-com:office:excel"
   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
   xmlns:html="http://www.w3.org/TR/REC-html40">`
-
   // Styles 数组
   var EXStyleStrings = []
-
   // Sheets 数组
   var EXSheetStrings = []
-
   // 便利 Worksheet
   EXSheets.forEach((sheet, sheetIndex) => {
-    // 没有指定文件名称，则组装一个文件名称
-    if (!fileName) { EXFileName += `${sheet.name}${sheetIndex ? '-' : ''}` }
-
     // Worksheet 头部
     var EXSheetString = `<Worksheet ss:Name="${sheet.name}">`
-
     // Table 头部
     EXSheetString += '<Table>'
-
     // Column 内容
     var EXSheetColumnString = ''
-
     // Row 内容
     var EXSheetRowString = ''
-
     // 便利 Row
     sheet.rows.forEach((row, rowIndex) => {
-
       // Row 头部
       var EXSheetRowHeadString = '<Row>'
-
       // Row 单元格内容
       var EXSheetRowCellString = ''
-
       // 便利 Cell
       row.forEach((cell, cellIndex) => {
-
         // 设置为 0 || 有值
         if (cell.style.rowHeight === 0 || !!cell.style.rowHeight) {
           // 更换 Row 头部
           EXSheetRowHeadString = `<Row ss:Height="${cell.style.rowHeight}">`
         }
-
         // 0 行时获取所有列宽
         if (rowIndex === 0) {
           // 设置为 0 || 有值
@@ -383,22 +389,17 @@ function ExcelExportManager(sheets, fileName, fileSuffix) {
             EXSheetColumnString += `<Column ss:Index="${cellIndex + 1}" ss:AutoFitWidth="0" ss:Width="${cell.style.colWidth}"/>`
           }
         }
-
         // 组合 StyleID
         var styleID = `s${sheetIndex}-${rowIndex}-${cellIndex}`
-
         // 获取数据类型
         var dataType = cell.dataType || typeof (cell.data)
-
         // 检查是否存在数据类型，不存在则不需要管
         if (dataType !== 'undefined') {
           // 类型首字母大写
           dataType = dataType.replace(dataType[0], dataType[0].toUpperCase())
         }
-
         // 超过 11 位的数字需要转成字符串
         if (dataType === 'Number' && cell.data > 10000000000) { dataType = 'String' }
-
         // Date 类型处理
         if (cell.dataType === 'Date') {
           // 没有数据，格式强行转换为 String 格式
@@ -411,87 +412,54 @@ function ExcelExportManager(sheets, fileName, fileSuffix) {
             cell.data = EXDateNumber(cell.data)
           }
         }
-
         // 获取单元格 Style 样式
         var EXStyleString = EXStyle(cell, styleID)
-
         // 添加到 Styles 列表
         if (EXStyleString) { EXStyleStrings.push(EXStyleString) }
-
         // 获取 Cell 单元格
         var EXCellString = EXCell(cell, dataType, styleID, rowIndex)
-
         // 拼接 Cell 单元格
         EXSheetRowCellString += EXCellString
-
-      }) // 便利 Cell
-
+      })
       // 拼接 Row 头部
       EXSheetRowString += EXSheetRowHeadString
-
       // 拼接 Row 单元格内容
       EXSheetRowString += EXSheetRowCellString
-
       // 拼接 Row 尾部
       EXSheetRowString += '</Row>'
-    }) // 便利 Cell
-
+    })
     // 拼接 Column 内容
     EXSheetString += EXSheetColumnString
-
     // 拼接 Row 内容
     EXSheetString += EXSheetRowString
-
     // Table 尾部
     EXSheetString += '</Table>'
-
     // Worksheet 尾部
     EXSheetString += '</Worksheet>'
-
     // 添加到 Sheets 列表
     EXSheetStrings.push(EXSheetString)
-
-  }) // 便利 Worksheet
-
+  })
   // Styles 是否有值
   if (EXStyleStrings.length) {
     // Styles 头部
     EXString += `<Styles>`
-
     // EXStyleStrings 添加到 Workbook
     EXStyleStrings.forEach((EXStyleString) => {
       // 拼接
       EXString += EXStyleString
     })
-
     // Styles 头部
     EXString += `</Styles>`
-
   }
-
   // EXSheetStrings 添加到 Workbook
   EXSheetStrings.forEach((EXSheetString) => {
     // 拼接
     EXString += EXSheetString
   })
-
   // Workbook 尾部
   EXString += '</Workbook>'
-
-  // 创建 a 标签
-  var alink = document.createElement('a')
-  // 设置下载文件名,大部分浏览器兼容,IE10及以下不兼容
-  alink.download = `${EXFileName}.${EXFileSuffix}`
-  // 将数据包装成 Blob
-  var blob = new Blob([EXString])
-  // 根据 Blob 创建 URL
-  alink.href = URL.createObjectURL(blob)
-  // 将 a 标签插入到页面
-  // document.body.appendChild(alink)
-  // 自动点击
-  alink.click()
-  // 移除 a 标签
-  // document.body.removeChild(alink)
+  // 下载
+  EXDownload(EXString, fileName, fileSuffix)
 }
 
 // 获取 Style
@@ -678,9 +646,51 @@ function EXDateNumber(data) {
   }
 }
 
+// ================================================================= 公共处理
+
+/**
+ * @description: 下载内容
+ * @param {*} data 下载内容
+ * @param {*} fileName 文件名
+ * @param {*} fileSuffix 文件后缀
+ * @return {*}
+ */
+function EXDownload(data, fileName, fileSuffix) {
+  // 创建 a 标签
+  var alink = document.createElement('a')
+  // 设置下载文件名,大部分浏览器兼容,IE10及以下不兼容
+  alink.download = `${fileName}.${fileSuffix}`
+  // 将数据包装成 Blob
+  var blob = new Blob([data])
+  // 根据 Blob 创建 URL
+  alink.href = URL.createObjectURL(blob)
+  // 将 a 标签插入到页面
+  // document.body.appendChild(alink)
+  // 自动点击
+  alink.click()
+  // 移除 a 标签
+  // document.body.removeChild(alink)
+}
+
+// 获取当前时间
+function EXNowTime() {
+  var date = new Date()
+  var year = date.getFullYear()
+  var month = date.getMonth() + 1
+  var day = date.getDate()
+  var hour = date.getHours()
+  var minute = date.getMinutes()
+  var second = date.getSeconds()
+  if (month >= 1 && month <= 9) { month = '0' + month }
+  if (day >= 0 && day <= 9) { day = '0' + day }
+  if (hour >= 0 && hour <= 9) { hour = '0' + hour }
+  if (minute >= 0 && minute <= 9) { minute = '0' + minute }
+  if (second >= 0 && second <= 9) { second = '0' + second }
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
 // 导出
 // export {
-//   ExcelExport as ex,
-//   ExcelExport as write,
-//   ExcelExport as Export
+//   Export as ex,
+//   Export as write
 // }

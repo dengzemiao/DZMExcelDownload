@@ -159,7 +159,7 @@
       }
     ]
     // 开始下载
-    ExcelExport(sheets, function (item, field, json, sheetIndex, row, col, rowCount, colCount) {
+    Export(sheets, function (item, field, json, sheetIndex, row, col, rowCount, colCount) {
        // index: 第几个sheet，row: 第几行，col: 第几列，rowCount: 当前 sheet 总行数，colCount: 当前 sheet 总列数
       // item: 单元格数据 field: 字段名 json: 当前单元格数据源对象
       // 判断处理单个字段
@@ -208,7 +208,7 @@
       }
       // 其他行列正常返回
       return item
-    })
+    }, null, 'csv')
 
     // 随机颜色
     function GetRandomColor () {
